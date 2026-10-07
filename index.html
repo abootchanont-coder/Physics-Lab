@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ตารางเรียนวิชาปฏิบัติการฟิสิกส์สำหรับวิศวกร 1</title>
+  <title>ตารางเรียนวิชาปฏิบัติการฟิสิกส์สำหรับวิศวกร 1/วิชาปฏิบัติการฟิสิกส์ 1</title>
   <!-- Google Fonts: Prompt -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -185,7 +185,6 @@
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
     }
 
-    /* สไตล์ช่องห้องเรียนที่ขึ้นมา Auto */
     .input-auto-room {
       background-color: #f8fafc !important;
       border-color: #cbd5e1 !important;
@@ -499,7 +498,7 @@
     <!-- Header -->
     <header>
       <div class="badge-sub">ภาควิชาฟิสิกส์ คณะวิทยาศาสตร์และเทคโนโลยี</div>
-      <h1>ตารางเรียนวิชาปฏิบัติการฟิสิกส์สำหรับวิศวกร 1/ปฏิบัติการฟิสิกส์ 1</h1>
+      <h1>ตารางเรียนวิชาปฏิบัติการฟิสิกส์สำหรับวิศวกร 1</h1>
       <p class="subtitle">ระบบค้นหาห้องเรียนและเวลาปฏิบัติการ</p>
     </header>
 
@@ -513,7 +512,7 @@
       </button>
     </div>
 
-    <!-- Search Card 1: ค้นหาตาม Sec (Sec 01,02 (Phy1) อยู่บนสุดของ dropdown) -->
+    <!-- Search Card 1: ค้นหาตาม Sec -->
     <div class="search-card" id="searchSecCard">
       <div class="form-grid">
         <div class="form-group">
@@ -542,7 +541,7 @@
       </div>
     </div>
 
-    <!-- Search Card 2: ค้นหาห้องเรียนที่มีการเรียนการสอน (เลือกปฏิบัติการ แล้วห้องขึ้น Auto) -->
+    <!-- Search Card 2: ค้นหาห้องเรียนที่มีการเรียนการสอน -->
     <div class="search-card" id="searchRoomCard" style="display: none;">
       <div class="form-grid-room">
         <div class="form-group">
@@ -554,7 +553,7 @@
 
         <div class="form-group">
           <label for="autoRoomInput">ชื่อห้องเรียน <span class="note"></span></label>
-          <input type="text" id="autoRoomInput" class="input-auto-room" readonly placeholder="">
+          <input type="text" id="autoRoomInput" class="input-auto-room" readonly placeholder="จะขึ้นอัตโนมัติเมื่อเลือกปฏิบัติการ">
         </div>
 
         <div class="form-group">
@@ -623,7 +622,6 @@
   <script>
     const SPREADSHEET_ID = '1VAS7F4clbFgMEEzgIURcKg8765-pKQHsfUPsVLiXLGM';
     
-    // รายชื่อแท็บทั้ง 15 สัปดาห์
     const WEEKS = Array.from({ length: 15 }, (_, i) => `สัปดาห์ที่ ${i + 1}`);
 
     const thaiMonths = {
@@ -645,7 +643,6 @@
     let isFetching = false;
     let labToRoomMap = {};
 
-    // ดึงข้อมูลผ่าน Google Visualization API ด้วย JSONP
     function fetchSheetJSONP(sheetName) {
       return new Promise((resolve) => {
         const callbackName = 'gvizCallback_' + Math.random().toString(36).substring(2, 9);
@@ -678,7 +675,7 @@
           }
         };
 
-        // เติม _t=Date.now() เพื่อป้องกันการจำแคชเก่า
+        // ใส่ Cache buster ให้ดึงข้อมูลล่าสุดเสมอ
         script.src = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=responseHandler:${callbackName}&_t=${Date.now()}`;
         script.onerror = function() {
           if (!isDone) {
@@ -692,35 +689,61 @@
       });
     }
 
-    // แปลงข้อมูลใน Google Sheet ออกมาเป็น Object
+    // แปลงโครงสร้างแถวและตาราง โดยตรวจจับตำแหน่งคอลัมน์เวลาทุกช่วงแบบอัตโนมัติ
     function parseSheetTable(sheetName, table) {
       const rows = table.rows || [];
       const defaultWeekMatch = sheetName.match(/\d+/);
       const defaultWeek = defaultWeekMatch ? defaultWeekMatch[0] : '';
       const records = [];
 
+      let timeSlots = [];
       let headerRowIdx = -1;
-      let timeSlots = [
-        { col: 4, label: '09.00 - 12.00 น.' },
-        { col: 5, label: '13.00 - 16.00 น.' },
-        { col: 6, label: '16.00 - 19.00 น.' }
-      ];
 
-      for (let r = 0; r < Math.min(rows.length, 10); r++) {
+      // 1. สแกนหาหัวตารางและตำแหน่งคอลัมน์ของแต่ละช่วงเวลาแบบไดนามิก (รวม 16.00 - 19.00 น.)
+      for (let r = 0; r < Math.min(rows.length, 12); r++) {
         const row = rows[r];
         if (!row || !row.c) continue;
-        const line = row.c.map(c => (c && (c.f || c.v !== null ? (c.f || String(c.v)) : '')) || '').join(' ');
-        if (line.includes('9.00') || line.includes('13.00')) {
+        let foundMorning = -1, foundAfternoon = -1, foundEvening = -1;
+
+        row.c.forEach((cell, cIdx) => {
+          if (!cell) return;
+          const str = (cell.f || (cell.v !== null && cell.v !== undefined ? String(cell.v) : '')).trim();
+          if (/9[.:]00|09[.:]00/i.test(str)) foundMorning = cIdx;
+          if (/13[.:]00/i.test(str)) foundAfternoon = cIdx;
+          if (/16[.:]00|16[.:]30|17[.:]00|19[.:]00/i.test(str)) foundEvening = cIdx;
+        });
+
+        if (foundMorning !== -1 || foundAfternoon !== -1 || foundEvening !== -1) {
           headerRowIdx = r;
+          if (foundMorning !== -1) timeSlots.push({ col: foundMorning, label: '09.00 - 12.00 น.' });
+          if (foundAfternoon !== -1) timeSlots.push({ col: foundAfternoon, label: '13.00 - 16.00 น.' });
+          if (foundEvening !== -1) timeSlots.push({ col: foundEvening, label: '16.00 - 19.00 น.' });
           break;
         }
       }
 
-      const startRow = headerRowIdx !== -1 ? headerRowIdx + 1 : 5;
+      // หากหัวตารางตรวจจับไม่สมบูรณ์ ให้ใช้ระบบ Fallback คอลัมน์ที่ครอบคลุมทุกตำแหน่ง
+      if (timeSlots.length === 0) {
+        timeSlots = [
+          { col: 4, label: '09.00 - 12.00 น.' },
+          { col: 5, label: '13.00 - 16.00 น.' },
+          { col: 6, label: '16.00 - 19.00 น.' },
+          { col: 7, label: '16.00 - 19.00 น.' },
+          { col: 8, label: '16.00 - 19.00 น.' }
+        ];
+      } else if (!timeSlots.some(s => s.label.includes('16.00'))) {
+        const maxCol = Math.max(...timeSlots.map(s => s.col));
+        timeSlots.push({ col: maxCol + 1, label: '16.00 - 19.00 น.' });
+        timeSlots.push({ col: maxCol + 2, label: '16.00 - 19.00 น.' });
+      }
+
+      const startRow = headerRowIdx !== -1 ? headerRowIdx + 1 : 4;
 
       let currentRoom = '';
       let currentLab = '';
       let currentWeek = defaultWeek;
+      let currentDay = '';
+      let currentDate = '';
 
       for (let r = startRow; r < rows.length; r++) {
         const row = rows[r];
@@ -732,10 +755,10 @@
           return (c.f || (c.v !== null && c.v !== undefined ? String(c.v) : '')).replace(/\[merged\]\s*/gi, '').trim();
         };
 
-        const c0 = getVal(0);
-        const c1 = getVal(1);
-        const c2 = getVal(2);
-        const c3 = getVal(3);
+        const c0 = getVal(0); // สัปดาห์
+        const c1 = getVal(1); // ห้อง หรือ ชื่อแลป
+        const c2 = getVal(2); // วัน
+        const c3 = getVal(3); // วันที่
 
         if (c0 && /^\d+$/.test(c0)) {
           currentWeek = c0;
@@ -746,6 +769,8 @@
         if (isRoom) {
           currentRoom = c1.replace(/^[_]/, '').trim();
           currentLab = '';
+          currentDay = '';
+          currentDate = '';
 
           for (let look = r + 1; look < Math.min(rows.length, r + 7); look++) {
             const nextRow = rows[look];
@@ -760,7 +785,17 @@
           currentLab = c1;
         }
 
-        const isSchedule = c2 && (c2.includes('จันทร์') || c2.includes('อังคาร') || c2.includes('พุธ') || c2.includes('พฤหัส') || c2.includes('ศุกร์') || c2.includes('เสาร์') || c3);
+        // จดจำวันและวันที่ (รองรับกรณีเซลล์ผสานแนวตั้ง)
+        if (c2 && (c2.includes('จันทร์') || c2.includes('อังคาร') || c2.includes('พุธ') || c2.includes('พฤหัส') || c2.includes('ศุกร์') || c2.includes('เสาร์') || c2.includes('อาทิตย์'))) {
+          currentDay = c2;
+        }
+        if (c3 && /\d+/.test(c3)) {
+          currentDate = c3;
+        }
+
+        const activeDay = c2 || currentDay;
+        const activeDate = c3 || currentDate;
+        const isSchedule = activeDay || activeDate;
 
         if (isSchedule && currentRoom) {
           timeSlots.forEach(slot => {
@@ -770,8 +805,8 @@
                 week: currentWeek || defaultWeek,
                 room: currentRoom,
                 lab: currentLab || 'ปฏิบัติการฟิสิกส์ 1',
-                day: c2,
-                date: c3,
+                day: activeDay,
+                date: activeDate,
                 time: slot.label,
                 secText: cellVal
               });
@@ -783,7 +818,6 @@
       return records;
     }
 
-    // ฟังก์ชันสร้าง Dropdown โดยจัดให้ Sec 01,02 (Phy1) อยู่บนสุดของรายการ
     function populateDropdowns(allRecords) {
       const secSelect = document.getElementById('secSelect');
       const labSelect = document.getElementById('labSelect');
@@ -795,7 +829,6 @@
 
       allRecords.forEach(item => {
         if (item.secText) {
-          // ตรวจสอบกลุ่ม Sec 01,02 (Phy1)
           if (/01\s*,\s*02\s*\(Phy\s*1\)/i.test(item.secText)) {
             hasPhy1Group = true;
           } else {
@@ -812,7 +845,6 @@
           }
         }
 
-        // Lab และการจับคู่กับห้อง
         if (item.lab && item.lab !== 'ปฏิบัติการฟิสิกส์ 1') {
           const cleanLab = item.lab.trim();
           labSet.add(cleanLab);
@@ -822,517 +854,12 @@
         }
       });
 
-      // 1. Dropdown Sec (ให้ Sec 01,02 (Phy1) อยู่บนสุดของตัวเลือก)
+      // วาง Sec 01,02 (Phy1) อยู่บนสุดของรายการตัวเลือก
       const sortedSecs = Array.from(secSet).sort((a, b) => a - b);
       const currSec = secSelect.value;
       secSelect.innerHTML = '<option value="">-- เลือก Sec เรียน --</option>';
 
-      // วาง Sec 01,02 (Phy1) เป็นรายการแรก
       if (hasPhy1Group) {
         const phyOpt = document.createElement('option');
         phyOpt.value = '01,02 (Phy1)';
-        phyOpt.textContent = 'Sec 01,02 (Phy1)';
-        secSelect.appendChild(phyOpt);
-      }
-
-      // ตามด้วย Sec ปกติเรียงลำดับ
-      sortedSecs.forEach(secNum => {
-        const padded = secNum < 10 ? '0' + secNum : secNum;
-        const opt = document.createElement('option');
-        opt.value = secNum;
-        opt.textContent = `Sec ${padded}`;
-        secSelect.appendChild(opt);
-      });
-
-      if (currSec) secSelect.value = currSec;
-
-      // 2. Dropdown ชื่อปฏิบัติการ
-      const sortedLabs = Array.from(labSet).sort();
-      const currLab = labSelect.value;
-      labSelect.innerHTML = '<option value="">-- เลือกชื่อปฏิบัติการ --</option>';
-      sortedLabs.forEach(lab => {
-        const opt = document.createElement('option');
-        opt.value = lab;
-        opt.textContent = lab;
-        labSelect.appendChild(opt);
-      });
-      if (currLab) labSelect.value = currLab;
-    }
-
-    // โหลดข้อมูลตารางทั้งหมด 15 สัปดาห์
-    async function loadAllScheduleData() {
-      if (cachedSchedule) return cachedSchedule;
-      if (isFetching) return [];
-
-      isFetching = true;
-      const statusArea = document.getElementById('statusArea');
-      const statusText = document.getElementById('statusText');
-      statusArea.style.display = 'block';
-      statusText.textContent = 'กำลังดึงข้อมูลตารางเรียนจาก Google Sheets ทั้ง 15 สัปดาห์...';
-
-      const promises = WEEKS.map(w => fetchSheetJSONP(w));
-      const results = await Promise.all(promises);
-
-      let allRecords = [];
-      results.forEach(res => {
-        if (res && res.table) {
-          const recs = parseSheetTable(res.sheetName, res.table);
-          allRecords = allRecords.concat(recs);
-        }
-      });
-
-      cachedSchedule = allRecords;
-      isFetching = false;
-      statusArea.style.display = 'none';
-
-      populateDropdowns(allRecords);
-      return cachedSchedule;
-    }
-
-    // ตรวจสอบ Sec ตรงกันหรือไม่ โดยแยก Sec 01,02 (Phy1) ออกมาต่างหาก
-    function matchSec(cellText, targetSecVal) {
-      if (!cellText || !targetSecVal) return false;
-
-      const isPhy1Target = (targetSecVal === '01,02 (Phy1)');
-      const cellIsPhy1 = /01\s*,\s*02\s*\(Phy\s*1\)/i.test(cellText);
-
-      // หากผู้ใช้เลือกกลุ่ม Sec 01,02 (Phy1)
-      if (isPhy1Target) {
-        return cellIsPhy1;
-      }
-
-      // หากผู้ใช้เลือก Sec ปกติ (เช่น Sec 01 หรือ Sec 02) จะไม่นับแถวของ Sec 01,02 (Phy1)
-      if (cellIsPhy1) {
-        return false;
-      }
-
-      const num = parseInt(targetSecVal, 10);
-      if (isNaN(num)) return false;
-
-      const cleaned = cellText.replace(/Phy\s*\d+/gi, '').replace(/ฟิสิกส์\s*\d+/gi, '');
-      const numbers = cleaned.match(/\d+/g);
-      if (!numbers) return false;
-
-      return numbers.some(n => parseInt(n, 10) === num);
-    }
-
-    // แปลงข้อความวันที่ภาษาไทยเป็น Object Date
-    function parseThaiDate(str) {
-      if (!str) return null;
-      const s = str.trim();
-      for (const [mName, mNum] of Object.entries(thaiMonths)) {
-        if (s.includes(mName)) {
-          const parts = s.split(mName);
-          const dayMatch = parts[0].match(/\d+/);
-          const yearMatch = parts[1] ? parts[1].match(/\d+/) : null;
-          if (dayMatch) {
-            const day = parseInt(dayMatch[0], 10);
-            let year = null;
-            if (yearMatch) {
-              let y = parseInt(yearMatch[0], 10);
-              if (y < 100) y += 2500;
-              if (y > 2400) y -= 543;
-              year = y;
-            } else {
-              year = new Date().getFullYear();
-            }
-            return { day, month: mNum, year };
-          }
-        }
-      }
-      return null;
-    }
-
-    function getJSDate(sheetDateStr) {
-      const parsed = parseThaiDate(sheetDateStr);
-      if (!parsed) return null;
-      return new Date(parsed.year, parsed.month - 1, parsed.day);
-    }
-
-    // ตรวจสอบว่าเป็นวันที่ปัจจุบันหรืออนาคตหรือไม่
-    function isCurrentOrFuture(sheetDateStr) {
-      const d = getJSDate(sheetDateStr);
-      if (!d) return false;
-      const now = new Date();
-      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      return d.getTime() >= today.getTime();
-    }
-
-    // เปรียบเทียบวันที่กับปฏิทิน
-    function isSameDate(calendarVal, sheetDateStr) {
-      if (!calendarVal || !sheetDateStr) return false;
-      const [y, m, d] = calendarVal.split('-').map(Number);
-      const parsedSheet = parseThaiDate(sheetDateStr);
-      if (!parsedSheet) return false;
-
-      const dayMatch = parsedSheet.day === d;
-      const monthMatch = parsedSheet.month === m;
-      const yearMatch = parsedSheet.year ? parsedSheet.year === y : true;
-
-      return dayMatch && monthMatch && yearMatch;
-    }
-
-    // เปรียบเทียบวันที่ว่ามากกว่าหรือเท่ากับวันที่เลือกหรือไม่
-    function isDateAfterOrEqual(calendarVal, sheetDateStr) {
-      if (!calendarVal || !sheetDateStr) return false;
-      const [y, m, d] = calendarVal.split('-').map(Number);
-      const calDate = new Date(y, m - 1, d);
-      const sheetDate = getJSDate(sheetDateStr);
-      if (!sheetDate) return false;
-      return sheetDate.getTime() >= calDate.getTime();
-    }
-
-    // -------------------------------------------------------------
-    // ฟังก์ชันค้นหา 1: ค้นหาตาม Sec
-    // -------------------------------------------------------------
-    async function doSearch() {
-      const secSelect = document.getElementById('secSelect');
-      const selectedSec = secSelect.value;
-      const dateInput = document.getElementById('dateInput').value;
-      const resultsContainer = document.getElementById('resultsContainer');
-      const emptyState = document.getElementById('emptyState');
-      const cardsList = document.getElementById('cardsList');
-      const resultsCount = document.getElementById('resultsCount');
-      const resultsTitle = document.getElementById('resultsTitle');
-
-      // ล้างผลก่อนหน้าออกทันทีก่อนแสดงผลใหม่
-      resultsContainer.style.display = 'none';
-      emptyState.style.display = 'none';
-      cardsList.innerHTML = '';
-      resultsCount.textContent = '0 รายการ';
-      resultsTitle.textContent = '';
-
-      if (!selectedSec) {
-        alert('กรุณาเลือก Sec เรียนที่ต้องการค้นหา');
-        secSelect.focus();
-        return;
-      }
-
-      const data = await loadAllScheduleData();
-
-      if (!data || data.length === 0) {
-        emptyState.style.display = 'block';
-        document.getElementById('emptyMessage').textContent = 'ไม่สามารถดึงข้อมูลจาก Google Sheets ได้ หรือยังไม่มีการแชร์สาธารณะ';
-        return;
-      }
-
-      // กรองตาม Sec และ วันที่
-      let filtered = data.filter(item => {
-        const matchesSec = matchSec(item.secText, selectedSec);
-        if (!matchesSec) return false;
-
-        if (dateInput) {
-          return isSameDate(dateInput, item.date);
-        }
-
-        return true;
-      });
-
-      // จัดเรียงตามสัปดาห์
-      filtered.sort((a, b) => {
-        const wa = parseInt(a.week, 10) || 0;
-        const wb = parseInt(b.week, 10) || 0;
-        return wa - wb;
-      });
-
-      // กรองวันที่ซ้ำกันให้แสดงอันเดียว
-      const seenDates = new Set();
-      filtered = filtered.filter(item => {
-        const dateKey = (item.date || '').trim() || `${item.week}_${item.day}`;
-        if (dateKey && seenDates.has(dateKey)) {
-          return false;
-        }
-        if (dateKey) {
-          seenDates.add(dateKey);
-        }
-        return true;
-      });
-
-      const secLabel = selectedSec === '01,02 (Phy1)' 
-        ? '01,02 (Phy1)' 
-        : (parseInt(selectedSec, 10) < 10 ? '0' + parseInt(selectedSec, 10) : selectedSec);
-
-      if (filtered.length === 0) {
-        emptyState.style.display = 'block';
-        document.getElementById('emptyMessage').textContent = `ไม่พบข้อมูลตารางเรียนสำหรับ Sec ${secLabel}` + (dateInput ? ` ในวันที่เลือก` : '');
-        document.getElementById('emptySubMessage').textContent = 'กรุณาตรวจสอบ Sec หรือวันที่ที่ระบุอีกครั้ง';
-        return;
-      }
-
-      // แสดงการ์ดผลลัพธ์
-      cardsList.innerHTML = '';
-      filtered.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'schedule-card';
-
-        const dayDate = [item.day, item.date].filter(Boolean).join(' ที่ ');
-
-        card.innerHTML = `
-          <div class="card-week">
-            <div class="wk-lbl">สัปดาห์ที่</div>
-            <div class="wk-num">${item.week || '-'}</div>
-          </div>
-          <div class="card-details">
-            <div class="lab-title">🔬 ${item.lab}</div>
-            <div class="card-meta">
-              <span class="meta-item">📅 ${dayDate || 'ตามประกาศในตาราง'}</span>
-              <span class="meta-item">👥 ${item.secText}</span>
-            </div>
-          </div>
-          <div class="card-badges">
-            <span class="badge-room">🏢 ห้อง ${item.room}</span>
-            <span class="badge-time">⏰ ${item.time}</span>
-          </div>
-        `;
-        cardsList.appendChild(card);
-      });
-
-      resultsTitle.textContent = `ตารางเรียน Sec ${secLabel}` + (dateInput ? ` (เฉพาะวันที่เลือก)` : ` (แสดงตามสัปดาห์ที่มีเรียน)`);
-      resultsCount.textContent = `พบ ${filtered.length} วันเรียน`;
-      resultsContainer.style.display = 'block';
-    }
-
-    // -------------------------------------------------------------
-    // ฟังก์ชันค้นหา 2: ค้นหาห้องเรียนที่มีการเรียนการสอน
-    // -------------------------------------------------------------
-    async function doSearchRoom() {
-      const labSelect = document.getElementById('labSelect');
-      const selectedLab = labSelect.value.trim();
-      const roomDateInput = document.getElementById('roomDateInput');
-      const selectedDate = roomDateInput.value;
-      const scope = document.querySelector('input[name="roomScope"]:checked').value;
-
-      const resultsContainer = document.getElementById('resultsContainer');
-      const emptyState = document.getElementById('emptyState');
-      const cardsList = document.getElementById('cardsList');
-      const resultsCount = document.getElementById('resultsCount');
-      const resultsTitle = document.getElementById('resultsTitle');
-
-      // ล้างผลการแสดงตารางก่อนหน้าออกทันที
-      resultsContainer.style.display = 'none';
-      emptyState.style.display = 'none';
-      cardsList.innerHTML = '';
-      resultsCount.textContent = '0 รายการ';
-      resultsTitle.textContent = '';
-
-      if (!selectedLab) {
-        alert('กรุณาเลือกชื่อปฏิบัติการที่ต้องการค้นหา');
-        labSelect.focus();
-        return;
-      }
-
-      if (!selectedDate) {
-        alert('กรุณาเลือกวัน/เดือน/ปี ที่เรียนจากปฏิทิน (ระบบบังคับเลือกวันที่สำหรับการค้นหานี้)');
-        roomDateInput.focus();
-        return;
-      }
-
-      // ตรวจสอบว่าวันที่เลือกเป็นปัจจุบันหรืออนาคตหรือไม่
-      const [y, m, d] = selectedDate.split('-').map(Number);
-      const chosenDateObj = new Date(y, m - 1, d);
-      const now = new Date();
-      const todayObj = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-      if (chosenDateObj.getTime() < todayObj.getTime()) {
-        emptyState.style.display = 'block';
-        document.getElementById('emptyMessage').textContent = '⚠️ วันที่เลือกเป็นอดีตที่ผ่านมาแล้ว';
-        document.getElementById('emptySubMessage').textContent = 'ระบบกำหนดให้แสดงผลเฉพาะตารางเรียนที่เป็นปัจจุบันและอนาคตเท่านั้น กรุณาเลือกวันที่ใหม่';
-        return;
-      }
-
-      const data = await loadAllScheduleData();
-
-      if (!data || data.length === 0) {
-        emptyState.style.display = 'block';
-        document.getElementById('emptyMessage').textContent = 'ไม่สามารถดึงข้อมูลจาก Google Sheets ได้';
-        return;
-      }
-
-      // กรองข้อมูล:
-      let filtered = data.filter(item => {
-        if (!isCurrentOrFuture(item.date)) return false;
-
-        if (scope === 'exact') {
-          if (!isSameDate(selectedDate, item.date)) return false;
-        } else {
-          if (!isDateAfterOrEqual(selectedDate, item.date)) return false;
-        }
-
-        if (item.lab.toLowerCase() !== selectedLab.toLowerCase()) {
-          return false;
-        }
-
-        return true;
-      });
-
-      // จัดเรียงตามวัน/เวลาที่เรียนตามลำดับ
-      filtered.sort((a, b) => {
-        const da = getJSDate(a.date);
-        const db = getJSDate(b.date);
-        if (da && db && da.getTime() !== db.getTime()) {
-          return da.getTime() - db.getTime();
-        }
-        return (a.time || '').localeCompare(b.time || '');
-      });
-
-      if (filtered.length === 0) {
-        emptyState.style.display = 'block';
-        const autoRoomVal = document.getElementById('autoRoomInput').value;
-        const roomStr = autoRoomVal ? `(${autoRoomVal})` : '';
-        document.getElementById('emptyMessage').textContent = `ไม่พบข้อมูลการเรียนการสอนใน ${selectedLab} ${roomStr}`;
-        document.getElementById('emptySubMessage').textContent = 'อาจเป็นห้องว่างในวันดังกล่าว หรือไม่มีตารางเรียนในช่วงที่เป็นปัจจุบันและอนาคต';
-        return;
-      }
-
-      // แสดงการ์ดผลลัพธ์
-      cardsList.innerHTML = '';
-      filtered.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'schedule-card';
-
-        const dayDate = [item.day, item.date].filter(Boolean).join(' ที่ ');
-
-        card.innerHTML = `
-          <div class="card-week">
-            <div class="wk-lbl">สัปดาห์ที่</div>
-            <div class="wk-num">${item.week || '-'}</div>
-          </div>
-          <div class="card-details">
-            <div class="lab-title">🔬 ${item.lab}</div>
-            <div class="card-meta">
-              <span class="meta-item">📅 วัน${dayDate || 'ตามตาราง'}</span>
-              <span class="meta-item">👥 กลุ่ม: ${item.secText}</span>
-            </div>
-          </div>
-          <div class="card-badges">
-            <span class="badge-room">🏢 ห้อง ${item.room}</span>
-            <span class="badge-time">⏰ ${item.time}</span>
-          </div>
-        `;
-        cardsList.appendChild(card);
-      });
-
-      const roomText = filtered[0] && filtered[0].room ? `ห้อง ${filtered[0].room} - ` : '';
-      const titleScope = scope === 'exact' ? `(เฉพาะวันที่เลือก)` : `(ปัจจุบันและอนาคต)`;
-      resultsTitle.textContent = `ตารางเรียน ${roomText}${selectedLab} ${titleScope}`;
-      resultsCount.textContent = `พบ ${filtered.length} คาบการสอน`;
-      resultsContainer.style.display = 'block';
-    }
-
-    // -------------------------------------------------------------
-    // ฟังก์ชันล้างข้อมูล (Reset)
-    // -------------------------------------------------------------
-    async function resetAll() {
-      document.getElementById('secSelect').value = '';
-      document.getElementById('dateInput').value = '';
-      document.getElementById('clearDateBtn').style.display = 'none';
-      document.getElementById('resultsContainer').style.display = 'none';
-      document.getElementById('emptyState').style.display = 'none';
-      document.getElementById('cardsList').innerHTML = '';
-
-      cachedSchedule = null;
-      await loadAllScheduleData();
-    }
-
-    async function resetRoomSearch() {
-      document.getElementById('labSelect').value = '';
-      document.getElementById('autoRoomInput').value = '';
-      document.getElementById('roomDateInput').value = '';
-      document.getElementById('resultsContainer').style.display = 'none';
-      document.getElementById('emptyState').style.display = 'none';
-      document.getElementById('cardsList').innerHTML = '';
-
-      cachedSchedule = null;
-      await loadAllScheduleData();
-    }
-
-    // -------------------------------------------------------------
-    // Event: เมื่อเลือกปฏิบัติการ ให้แสดงห้องเรียนขึ้นมาโดยอัตโนมัติ (Auto)
-    // -------------------------------------------------------------
-    document.getElementById('labSelect').addEventListener('change', (e) => {
-      const selectedLab = e.target.value.trim();
-      const autoRoomInput = document.getElementById('autoRoomInput');
-
-      if (!selectedLab) {
-        autoRoomInput.value = '';
-        return;
-      }
-
-      if (labToRoomMap[selectedLab]) {
-        autoRoomInput.value = `ห้อง ${labToRoomMap[selectedLab]}`;
-      } else if (cachedSchedule) {
-        const found = cachedSchedule.find(item => item.lab === selectedLab && item.room);
-        if (found && found.room) {
-          autoRoomInput.value = `ห้อง ${found.room}`;
-        } else {
-          autoRoomInput.value = 'ไม่พบข้อมูลห้อง';
-        }
-      }
-    });
-
-    // -------------------------------------------------------------
-    // ระบบสลับแท็บ (Tab Switching)
-    // -------------------------------------------------------------
-    const tabSecBtn = document.getElementById('tabSecBtn');
-    const tabRoomBtn = document.getElementById('tabRoomBtn');
-    const searchSecCard = document.getElementById('searchSecCard');
-    const searchRoomCard = document.getElementById('searchRoomCard');
-    const resultsContainer = document.getElementById('resultsContainer');
-    const emptyState = document.getElementById('emptyState');
-
-    tabSecBtn.addEventListener('click', () => {
-      tabSecBtn.classList.add('active');
-      tabRoomBtn.classList.remove('active');
-      searchSecCard.style.display = 'block';
-      searchRoomCard.style.display = 'none';
-      resultsContainer.style.display = 'none';
-      emptyState.style.display = 'none';
-    });
-
-    tabRoomBtn.addEventListener('click', () => {
-      tabRoomBtn.classList.add('active');
-      tabSecBtn.classList.remove('active');
-      searchRoomCard.style.display = 'block';
-      searchSecCard.style.display = 'none';
-      resultsContainer.style.display = 'none';
-      emptyState.style.display = 'none';
-    });
-
-    // Event Listeners การค้นหา
-    document.getElementById('searchBtn').addEventListener('click', doSearch);
-    document.getElementById('resetBtn').addEventListener('click', resetAll);
-
-    document.getElementById('searchRoomBtn').addEventListener('click', doSearchRoom);
-    document.getElementById('resetRoomBtn').addEventListener('click', resetRoomSearch);
-
-    // ปฏิทินและปุ่มล้างวันที่ในแท็บค้นหา Sec
-    const dateInputEl = document.getElementById('dateInput');
-    const clearDateBtn = document.getElementById('clearDateBtn');
-
-    dateInputEl.addEventListener('change', () => {
-      if (dateInputEl.value) {
-        clearDateBtn.style.display = 'inline-block';
-      } else {
-        clearDateBtn.style.display = 'none';
-      }
-    });
-
-    clearDateBtn.addEventListener('click', () => {
-      dateInputEl.value = '';
-      clearDateBtn.style.display = 'none';
-    });
-
-    // กำหนดค่าเริ่มต้นให้กับปฏิทินของห้องเรียนเป็นวันปัจจุบัน
-    window.addEventListener('DOMContentLoaded', () => {
-      const now = new Date();
-      const yyyy = now.getFullYear();
-      const mm = String(now.getMonth() + 1).padStart(2, '0');
-      const dd = String(now.getDate()).padStart(2, '0');
-      document.getElementById('roomDateInput').value = `${yyyy}-${mm}-${dd}`;
-      document.getElementById('roomDateInput').min = `${yyyy}-${mm}-${dd}`;
-
-      loadAllScheduleData();
-    });
-  </script>
-</body>
-</html>
+        phyOpt
