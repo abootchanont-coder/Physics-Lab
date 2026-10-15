@@ -1,2649 +1,1573 @@
 <!DOCTYPE html>
-
 <html lang="th">
-
 <head>
-
   <meta charset="UTF-8">
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>ตารางเรียนวิชาปฏิบัติการฟิสิกส์สำหรับวิศวกร 1</title>
-
   <!-- Google Fonts: Prompt -->
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
-
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
   <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-
-
   <style>
-
     :root {
-
       --primary: #1e40af;
-
       --primary-light: #3b82f6;
-
       --primary-dark: #1e3a8a;
-
       --accent: #0284c7;
-
       --bg: #f8fafc;
-
       --card-bg: #ffffff;
-
       --text-main: #0f172a;
-
       --text-muted: #64748b;
-
       --border: #e2e8f0;
-
       --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-
       --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-
     }
-
-
 
     * {
-
       box-sizing: border-box;
-
       margin: 0;
-
       padding: 0;
-
       font-family: 'Prompt', sans-serif;
-
     }
-
-
 
     body {
-
       background-color: var(--bg);
-
       color: var(--text-main);
-
       min-height: 100vh;
-
       display: flex;
-
       flex-direction: column;
-
       align-items: center;
-
       padding: 24px 16px;
-
     }
-
-
 
     .container {
-
       width: 100%;
-
       max-width: 900px;
-
       margin: 0 auto;
-
     }
-
-
 
     /* Header */
-
     header {
-
       text-align: center;
-
       margin-bottom: 24px;
-
     }
-
-
 
     .badge-sub {
-
       display: inline-block;
-
       background-color: #dbeafe;
-
       color: var(--primary);
-
       font-size: 0.85rem;
-
       font-weight: 600;
-
       padding: 4px 14px;
-
       border-radius: 9999px;
-
       margin-bottom: 10px;
-
     }
-
-
 
     h1 {
-
       font-size: 1.85rem;
-
       font-weight: 700;
-
       color: var(--primary-dark);
-
       line-height: 1.35;
-
       margin-bottom: 6px;
-
     }
-
-
 
     p.subtitle {
-
       color: var(--text-muted);
-
       font-size: 0.95rem;
-
     }
-
-
 
     /* Tabs Navigation */
-
     .tabs-nav {
-
       display: flex;
-
       gap: 10px;
-
       margin-bottom: 16px;
-
       background: #e2e8f0;
-
       padding: 6px;
-
       border-radius: 14px;
-
     }
-
-
 
     .tab-btn {
-
       flex: 1;
-
       padding: 10px 16px;
-
       border: none;
-
       background: transparent;
-
       color: #475569;
-
       font-size: 0.95rem;
-
       font-weight: 600;
-
       border-radius: 10px;
-
       cursor: pointer;
-
       transition: all 0.2s ease;
-
       display: inline-flex;
-
       align-items: center;
-
       justify-content: center;
-
       gap: 8px;
-
     }
-
-
 
     .tab-btn.active {
-
       background: #ffffff;
-
       color: var(--primary);
-
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
-
     }
-
-
 
     /* Search Box Card */
-
     .search-card {
-
       background: var(--card-bg);
-
       border-radius: 16px;
-
       padding: 24px;
-
       box-shadow: var(--shadow);
-
       border: 1px solid var(--border);
-
       margin-bottom: 28px;
-
     }
-
-
 
     .form-grid {
-
       display: grid;
-
       grid-template-columns: 1fr 1fr auto;
-
       gap: 16px;
-
       align-items: flex-end;
-
     }
-
-
 
     .form-grid-room {
-
       display: grid;
-
       grid-template-columns: 1.2fr 0.9fr 1fr auto;
-
       gap: 14px;
-
       align-items: flex-end;
-
     }
-
-
 
     @media (max-width: 860px) {
-
       .form-grid, .form-grid-room {
-
         grid-template-columns: 1fr;
-
       }
-
       h1 {
-
         font-size: 1.5rem;
-
       }
-
     }
-
-
 
     .form-group {
-
       display: flex;
-
       flex-direction: column;
-
       gap: 6px;
-
     }
-
-
 
     label {
-
       font-size: 0.9rem;
-
       font-weight: 500;
-
       color: #334155;
-
     }
-
-
 
     label span.note {
-
       font-size: 0.78rem;
-
       font-weight: 400;
-
       color: var(--text-muted);
-
     }
-
-
 
     select,
-
     input[type="text"],
-
     input[type="date"] {
-
       width: 100%;
-
       padding: 10px 14px;
-
       border: 1.5px solid var(--border);
-
       border-radius: 10px;
-
       font-size: 0.95rem;
-
       color: var(--text-main);
-
       background-color: #fff;
-
       transition: all 0.2s ease;
-
       outline: none;
-
     }
-
-
 
     select {
-
       cursor: pointer;
-
     }
-
-
 
     select:focus,
-
     input[type="date"]:focus {
-
       border-color: var(--primary-light);
-
       box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-
     }
-
-
 
     .input-auto-room {
-
       background-color: #f8fafc !important;
-
       border-color: #cbd5e1 !important;
-
       color: var(--primary) !important;
-
       font-weight: 600 !important;
-
       cursor: default !important;
-
     }
-
-
 
     .btn-group {
-
       display: flex;
-
       gap: 8px;
-
       align-items: center;
-
     }
-
-
 
     @media (max-width: 860px) {
-
       .btn-group {
-
         width: 100%;
-
       }
-
       .btn-group button {
-
         flex: 1;
-
       }
-
     }
-
-
 
     .btn-search {
-
       background: linear-gradient(135deg, var(--primary), var(--primary-light));
-
       color: #fff;
-
       font-weight: 600;
-
       font-size: 0.95rem;
-
       border: none;
-
       border-radius: 10px;
-
       padding: 11px 20px;
-
       cursor: pointer;
-
       display: inline-flex;
-
       align-items: center;
-
       justify-content: center;
-
       gap: 6px;
-
       transition: all 0.2s ease;
-
       box-shadow: 0 2px 4px rgba(30, 64, 175, 0.2);
-
       height: 45px;
-
       white-space: nowrap;
-
     }
-
-
 
     .btn-search:hover {
-
       opacity: 0.95;
-
       transform: translateY(-1px);
-
       box-shadow: 0 4px 8px rgba(30, 64, 175, 0.25);
-
     }
-
-
 
     .btn-reset {
-
       background: #f1f5f9;
-
       color: #475569;
-
       font-weight: 500;
-
       font-size: 0.95rem;
-
       border: 1.5px solid var(--border);
-
       border-radius: 10px;
-
       padding: 10px 18px;
-
       cursor: pointer;
-
       display: inline-flex;
-
       align-items: center;
-
       justify-content: center;
-
       gap: 6px;
-
       transition: all 0.2s ease;
-
       height: 45px;
-
       white-space: nowrap;
-
     }
-
-
 
     .btn-reset:hover {
-
       background: #e2e8f0;
-
       color: #0f172a;
-
     }
-
-
 
     .btn-clear {
-
       background: transparent;
-
       border: none;
-
       color: var(--text-muted);
-
       font-size: 0.8rem;
-
       text-decoration: underline;
-
       cursor: pointer;
-
       margin-top: 6px;
-
       align-self: flex-start;
-
     }
-
-
 
     .scope-options {
-
       margin-top: 14px;
-
       display: flex;
-
       gap: 18px;
-
       font-size: 0.88rem;
-
       color: #334155;
-
       flex-wrap: wrap;
-
     }
-
-
 
     .scope-label {
-
       display: inline-flex;
-
       align-items: center;
-
       gap: 6px;
-
       cursor: pointer;
-
     }
-
-
 
     /* Status & Loading */
-
     .status-area {
-
       text-align: center;
-
       padding: 20px;
-
       color: var(--text-muted);
-
       font-size: 0.95rem;
-
     }
-
-
 
     .spinner {
-
       width: 32px;
-
       height: 32px;
-
       border: 3.5px solid #e2e8f0;
-
       border-top-color: var(--primary-light);
-
       border-radius: 50%;
-
       animation: spin 0.8s linear infinite;
-
       margin: 0 auto 12px;
-
     }
-
-
 
     @keyframes spin {
-
       to { transform: rotate(360deg); }
-
     }
-
-
 
     /* Result Section */
-
     .results-header {
-
       display: flex;
-
       justify-content: space-between;
-
       align-items: center;
-
       margin-bottom: 16px;
-
       flex-wrap: wrap;
-
       gap: 8px;
-
     }
-
-
 
     .results-title {
-
       font-size: 1.15rem;
-
       font-weight: 600;
-
       color: var(--primary-dark);
-
     }
-
-
 
     .results-count {
-
       font-size: 0.85rem;
-
       background: #e0f2fe;
-
       color: var(--accent);
-
       padding: 4px 12px;
-
       border-radius: 20px;
-
       font-weight: 500;
-
     }
-
-
 
     .cards-list {
-
       display: flex;
-
       flex-direction: column;
-
       gap: 14px;
-
     }
-
-
 
     .schedule-card {
-
       background: var(--card-bg);
-
       border-radius: 14px;
-
       padding: 18px 20px;
-
       border: 1px solid var(--border);
-
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
-
       display: grid;
-
       grid-template-columns: auto 1fr auto;
-
       gap: 18px;
-
       align-items: center;
-
       transition: transform 0.15s ease, box-shadow 0.15s ease;
-
     }
-
-
 
     .schedule-card:hover {
-
       transform: translateY(-2px);
-
       box-shadow: var(--shadow);
-
     }
-
-
 
     @media (max-width: 640px) {
-
       .schedule-card {
-
         grid-template-columns: 1fr;
-
         gap: 12px;
-
       }
-
     }
-
-
 
     .card-week {
-
       background: #f1f5f9;
-
       border-radius: 10px;
-
       padding: 8px 14px;
-
       text-align: center;
-
       min-width: 90px;
-
     }
-
-
 
     .card-week .wk-lbl {
-
       font-size: 0.72rem;
-
       color: var(--text-muted);
-
       text-transform: uppercase;
-
       font-weight: 600;
-
     }
-
-
 
     .card-week .wk-num {
-
       font-size: 1.3rem;
-
       font-weight: 700;
-
       color: var(--primary);
-
       line-height: 1.2;
-
     }
-
-
 
     .card-details {
-
       display: flex;
-
       flex-direction: column;
-
       gap: 4px;
-
     }
-
-
 
     .lab-title {
-
       font-size: 1.05rem;
-
       font-weight: 600;
-
       color: #0f172a;
-
     }
-
-
 
     .card-meta {
-
       display: flex;
-
       flex-wrap: wrap;
-
       gap: 12px;
-
       font-size: 0.85rem;
-
       color: var(--text-muted);
-
       margin-top: 2px;
-
     }
-
-
 
     .meta-item {
-
       display: inline-flex;
-
       align-items: center;
-
       gap: 4px;
-
     }
 
+    .teacher-item {
+      color: #059669;
+      font-weight: 500;
+      background-color: #d1fae5;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
 
+    .teacher-empty {
+      color: #64748b;
+      font-weight: 500;
+      background-color: #f1f5f9;
+      padding: 2px 8px;
+      border-radius: 6px;
+    }
 
     .card-badges {
-
       display: flex;
-
       flex-direction: column;
-
       align-items: flex-end;
-
       gap: 6px;
-
     }
-
-
 
     @media (max-width: 640px) {
-
       .card-badges {
-
         align-items: flex-start;
-
         flex-direction: row;
-
         flex-wrap: wrap;
-
       }
-
     }
-
-
 
     .badge-room {
-
       background-color: #eff6ff;
-
       color: var(--primary);
-
       border: 1px solid #bfdbfe;
-
       padding: 5px 12px;
-
       border-radius: 8px;
-
       font-weight: 600;
-
       font-size: 0.95rem;
-
       white-space: nowrap;
-
     }
-
-
 
     .badge-time {
-
       background-color: #fef3c7;
-
       color: #92400e;
-
       border: 1px solid #fde68a;
-
       padding: 4px 10px;
-
       border-radius: 8px;
-
       font-weight: 500;
-
       font-size: 0.82rem;
-
       white-space: nowrap;
-
     }
-
-
 
     .empty-state {
-
       background: #ffffff;
-
       border-radius: 14px;
-
       padding: 40px 20px;
-
       text-align: center;
-
       border: 1px dashed var(--border);
-
       color: var(--text-muted);
-
     }
-
-
 
     .empty-state .icon {
-
       font-size: 2.2rem;
-
       margin-bottom: 8px;
-
     }
-
-
 
     /* Bottom Action Button */
-
     .bottom-action {
-
       margin-top: 36px;
-
       margin-bottom: 24px;
-
       text-align: center;
-
     }
-
-
 
     .btn-all-table {
-
       display: inline-flex;
-
       align-items: center;
-
       gap: 10px;
-
       background-color: #ffffff;
-
       color: var(--primary);
-
       border: 2px solid var(--primary);
-
       padding: 12px 28px;
-
       border-radius: 12px;
-
       font-size: 1rem;
-
       font-weight: 600;
-
       text-decoration: none;
-
       transition: all 0.2s ease;
-
       box-shadow: var(--shadow);
-
     }
-
-
 
     .btn-all-table:hover {
-
       background-color: var(--primary);
-
       color: #ffffff;
-
       transform: translateY(-2px);
-
       box-shadow: var(--shadow-lg);
-
     }
-
   </style>
-
 </head>
-
 <body>
 
-
-
   <div class="container">
-
     <!-- Header -->
-
     <header>
-
       <div class="badge-sub">ภาควิชาฟิสิกส์ คณะวิทยาศาสตร์และเทคโนโลยี</div>
-
-      <h1>ตารางเรียนวิชาปฏิบัติการฟิสิกส์สำหรับวิศวกร 1/ปฏิบัติการฟิสิกส์ 1</h1>
-
+      <h1>ตารางเรียนวิชาปฏิบัติการฟิสิกส์สำหรับวิศวกร 1 / ปฏิบัติการฟิสิกส์ 1</h1>
       <p class="subtitle">ระบบค้นหาห้องเรียนและเวลาปฏิบัติการ</p>
-
     </header>
 
-
-
     <!-- Tabs Selection -->
-
     <div class="tabs-nav">
-
       <button class="tab-btn active" id="tabSecBtn">
-
         <span>👤 ค้นหาตาม Sec เรียน</span>
-
       </button>
-
       <button class="tab-btn" id="tabRoomBtn">
-
         <span>🏫 ค้นหาห้องเรียน / ปฏิบัติการ</span>
-
       </button>
-
     </div>
-
-
 
     <!-- Search Card 1: ค้นหาตาม Sec -->
-
     <div class="search-card" id="searchSecCard">
-
       <div class="form-grid">
-
         <div class="form-group">
-
           <label for="secSelect">Sec เรียน <span style="color: #ef4444;">*</span></label>
-
           <select id="secSelect">
-
             <option value="">-- กำลังโหลด Sec จากตาราง... --</option>
-
           </select>
-
         </div>
-
-
 
         <div class="form-group">
-
           <label for="dateInput">
-
             วันที่เรียน <span class="note">(ไม่เลือก = แสดงทุกสัปดาห์ที่มีเรียน)</span>
-
           </label>
-
           <input type="date" id="dateInput">
-
           <button type="button" class="btn-clear" id="clearDateBtn" style="display: none;">ล้างวันที่เลือก</button>
-
         </div>
-
-
 
         <div class="btn-group">
-
           <button class="btn-search" id="searchBtn">
-
             <span>🔍 ค้นหา</span>
-
           </button>
-
           <button class="btn-reset" id="resetBtn" title="ล้างข้อมูลการแสดงผล">
-
             <span>🔄 ล้างข้อมูล</span>
-
           </button>
-
         </div>
-
       </div>
-
     </div>
-
-
 
     <!-- Search Card 2: ค้นหาห้องเรียนที่มีการเรียนการสอน -->
-
     <div class="search-card" id="searchRoomCard" style="display: none;">
-
       <div class="form-grid-room">
-
         <div class="form-group">
-
           <label for="labSelect">ชื่อปฏิบัติการ <span style="color: #ef4444;">*</span></label>
-
           <select id="labSelect">
-
             <option value="">-- กำลังโหลดปฏิบัติการ... --</option>
-
           </select>
-
         </div>
 
-
-
         <div class="form-group">
-
           <label for="autoRoomInput">ชื่อห้องเรียน <span class="note"></span></label>
-
           <input type="text" id="autoRoomInput" class="input-auto-room" readonly placeholder="">
-
         </div>
-
-
 
         <div class="form-group">
-
           <label for="roomDateInput">
-
             วัน/เดือน/ปี ที่เรียน <span style="color: #ef4444;">*</span>
-
             <span class="note">(บังคับเลือก)</span>
-
           </label>
-
           <input type="date" id="roomDateInput">
-
         </div>
-
-
 
         <div class="btn-group">
-
           <button class="btn-search" id="searchRoomBtn">
-
             <span>🔍 ค้นหา</span>
-
           </button>
-
           <button class="btn-reset" id="resetRoomBtn" title="ล้างข้อมูลการแสดงผล">
-
             <span>🔄 ล้างข้อมูล</span>
-
           </button>
-
         </div>
-
       </div>
-
-
 
       <div class="scope-options">
-
         <label class="scope-label">
-
           <input type="radio" name="roomScope" value="exact" checked>
-
           <span>แสดงเฉพาะวันที่เลือก</span>
-
         </label>
-
         <label class="scope-label">
-
           <input type="radio" name="roomScope" value="future">
-
           <span>แสดงตั้งแต่วันที่เลือกเป็นต้นไป (ปัจจุบันและอนาคต)</span>
-
         </label>
-
       </div>
-
     </div>
-
-
 
     <!-- Status / Loading Area -->
-
     <div id="statusArea" class="status-area" style="display: none;">
-
       <div class="spinner"></div>
-
       <div id="statusText">กำลังโหลดข้อมูลตารางเรียน...</div>
-
     </div>
-
-
 
     <!-- Results Area -->
-
     <div id="resultsContainer" style="display: none;">
-
       <div class="results-header">
-
         <div class="results-title" id="resultsTitle">ผลการค้นหา</div>
-
         <div class="results-count" id="resultsCount">0 รายการ</div>
-
       </div>
-
       <div class="cards-list" id="cardsList"></div>
-
     </div>
-
-
 
     <!-- Empty State -->
-
     <div id="emptyState" class="empty-state" style="display: none;">
-
       <div class="icon">🔍</div>
-
       <div id="emptyMessage" style="font-size: 1rem; font-weight: 500;">ไม่พบข้อมูลตารางเรียน</div>
-
       <div id="emptySubMessage" style="font-size: 0.85rem; margin-top: 4px;">กรุณาตรวจสอบเงื่อนไขที่ระบุอีกครั้ง</div>
-
     </div>
-
-
 
     <!-- Bottom Link Button -->
-
     <div class="bottom-action">
-
       <a href="https://docs.google.com/spreadsheets/d/1VAS7F4clbFgMEEzgIURcKg8765-pKQHsfUPsVLiXLGM/edit?usp=sharing"
-
          target="_blank"
-
          rel="noopener noreferrer"
-
          class="btn-all-table">
-
         📊 แสดงตารางทั้งหมด
-
       </a>
-
     </div>
-
   </div>
 
-
-
   <script>
-
     const SPREADSHEET_ID = '1VAS7F4clbFgMEEzgIURcKg8765-pKQHsfUPsVLiXLGM';
-
-    
-
     const WEEKS = Array.from({ length: 15 }, (_, i) => `สัปดาห์ที่ ${i + 1}`);
 
-
-
     const thaiMonths = {
-
       'ม.ค.': 1, 'มกราคม': 1,
-
       'ก.พ.': 2, 'กุมภาพันธ์': 2,
-
       'มี.ค.': 3, 'มีนาคม': 3,
-
       'เม.ย.': 4, 'เมษายน': 4,
-
       'พ.ค.': 5, 'พฤษภาคม': 5,
-
       'มิ.ย.': 6, 'มิถุนายน': 6,
-
       'ก.ค.': 7, 'กรกฎาคม': 7,
-
       'ส.ค.': 8, 'สิงหาคม': 8,
-
       'ก.ย.': 9, 'กันยายน': 9,
-
       'ต.ค.': 10, 'ตุลาคม': 10,
-
       'พ.ย.': 11, 'พฤศจิกายน': 11,
-
       'ธ.ค.': 12, 'ธันวาคม': 12
-
     };
 
-
-
     let cachedSchedule = null;
-
+    let teachersRawData = [];
     let isFetching = false;
-
     let labToRoomMap = {};
 
-
-
-    function fetchSheetJSONP(sheetName) {
-
-      return new Promise((resolve) => {
-
-        const callbackName = 'gvizCallback_' + Math.random().toString(36).substring(2, 9);
-
-        const script = document.createElement('script');
-
-        let isDone = false;
-
-
-
-        const timer = setTimeout(() => {
-
-          if (!isDone) {
-
-            isDone = true;
-
-            cleanup();
-
-            resolve(null);
-
-          }
-
-        }, 12000);
-
-
-
-        function cleanup() {
-
-          clearTimeout(timer);
-
-          delete window[callbackName];
-
-          if (script.parentNode) script.parentNode.removeChild(script);
-
-        }
-
-
-
-        window[callbackName] = function(response) {
-
-          if (!isDone) {
-
-            isDone = true;
-
-            cleanup();
-
-            if (response && response.status === 'ok' && response.table) {
-
-              resolve({ sheetName, table: response.table });
-
-            } else {
-
-              resolve(null);
-
-            }
-
-          }
-
-        };
-
-
-
-        // ใส่ Cache buster ให้ดึงข้อมูลล่าสุดเสมอ
-
-        script.src = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=responseHandler:${callbackName}&_t=${Date.now()}`;
-
-        script.onerror = function() {
-
-          if (!isDone) {
-
-            isDone = true;
-
-            cleanup();
-
-            resolve(null);
-
-          }
-
-        };
-
-
-
-        document.head.appendChild(script);
-
-      });
-
+    // ฟังก์ชันแปลงชื่อห้อง Lan (ออนไลน์) เป็น DLearn (ออนไลน์)
+    function formatRoomName(roomStr) {
+      if (!roomStr) return '';
+      return roomStr
+        .replace(/^[_]/, '')
+        .trim()
+        .replace(/Lan\s*\(\s*ออนไลน์\s*\)/gi, 'DLearn (ออนไลน์)');
     }
 
+    // ดึงข้อมูลผ่าน JSONP (รองรับ forceNoHeaders = true เพื่อป้องกัน Google API กลืนแถวข้อมูลเป็น Header)
+    function fetchSheetJSONP(sheetName, forceNoHeaders = false) {
+      return new Promise((resolve) => {
+        const callbackName = 'gvizCallback_' + Math.random().toString(36).substring(2, 9);
+        const script = document.createElement('script');
+        let isDone = false;
 
+        const timer = setTimeout(() => {
+          if (!isDone) {
+            isDone = true;
+            cleanup();
+            resolve(null);
+          }
+        }, 12000);
 
-    // แปลงโครงสร้างแถวและตาราง โดยตรวจจับตำแหน่งคอลัมน์เวลาทุกช่วงแบบอัตโนมัติ
+        function cleanup() {
+          clearTimeout(timer);
+          delete window[callbackName];
+          if (script.parentNode) script.parentNode.removeChild(script);
+        }
 
-    // แปลงข้อมูลใน Google Sheet ออกมาเป็น Object
+        window[callbackName] = function(response) {
+          if (!isDone) {
+            isDone = true;
+            cleanup();
+            if (response && response.status === 'ok' && response.table) {
+              resolve({ sheetName, table: response.table });
+            } else {
+              resolve(null);
+            }
+          }
+        };
 
+        const headersParam = forceNoHeaders ? '&headers=0' : '';
+        script.src = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}${headersParam}&tqx=responseHandler:${callbackName}&_t=${Date.now()}`;
+        script.onerror = function() {
+          if (!isDone) {
+            isDone = true;
+            cleanup();
+            resolve(null);
+          }
+        };
+
+        document.head.appendChild(script);
+      });
+    }
+
+    // แปลงข้อความ CSV เป็น Array 2 มิติ
+    function parseCSV(text) {
+      const rows = [];
+      let row = [];
+      let cur = '';
+      let inQuotes = false;
+
+      for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        const next = text[i + 1];
+
+        if (inQuotes) {
+          if (ch === '"' && next === '"') {
+            cur += '"';
+            i++;
+          } else if (ch === '"') {
+            inQuotes = false;
+          } else {
+            cur += ch;
+          }
+        } else {
+          if (ch === '"') {
+            inQuotes = true;
+          } else if (ch === ',') {
+            row.push(cur.trim());
+            cur = '';
+          } else if (ch === '\n' || (ch === '\r' && next === '\n')) {
+            row.push(cur.trim());
+            rows.push(row);
+            row = [];
+            cur = '';
+            if (ch === '\r') i++;
+          } else if (ch !== '\r') {
+            cur += ch;
+          }
+        }
+      }
+      if (cur.length > 0 || row.length > 0) {
+        row.push(cur.trim());
+        rows.push(row);
+      }
+      return rows;
+    }
+
+    // ตรวจสอบว่าข้อความในเซลล์เป็นหัวตารางเวลาหรือไม่
+    function isHeaderOrTimeText(str) {
+      if (!str) return true;
+      const s = str.trim();
+      if (!s) return true;
+      if (/^(sec|กลุ่ม|ลำดับ|สัปดาห์)/i.test(s) && !/\d/.test(s)) return true;
+      if (/9[.:]00|12[.:]00|13[.:]00|16[.:]00|19[.:]00|เวลา/i.test(s)) return true;
+      return false;
+    }
+
+    // ดึงและจัดโครงสร้างข้อมูลจากแท็บ "ชื่อผู้สอน"
+    async function loadTeachersData() {
+      const sheetName = 'ชื่อผู้สอน';
+
+      const [jsonpRes, csvText] = await Promise.all([
+        fetchSheetJSONP(sheetName, true),
+        fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}&_t=${Date.now()}`)
+          .then(r => (r.ok ? r.text() : null))
+          .catch(() => null)
+      ]);
+
+      let idxB = 1, idxC = 2, idxD = 3, idxF = 5, idxG = 6, idxH = 7;
+
+      if (jsonpRes && jsonpRes.table && jsonpRes.table.cols) {
+        const cols = jsonpRes.table.cols;
+        const findCol = (letter) => cols.findIndex(c => c && c.id && c.id.toUpperCase() === letter);
+        if (findCol('B') !== -1) idxB = findCol('B');
+        if (findCol('C') !== -1) idxC = findCol('C');
+        if (findCol('D') !== -1) idxD = findCol('D');
+        if (findCol('F') !== -1) idxF = findCol('F');
+        if (findCol('G') !== -1) idxG = findCol('G');
+        if (findCol('H') !== -1) idxH = findCol('H');
+      }
+
+      const rawRows = [];
+      const csvRows = csvText ? parseCSV(csvText) : [];
+      const gvizRows = (jsonpRes && jsonpRes.table && jsonpRes.table.rows) ? jsonpRes.table.rows : [];
+      const maxLen = Math.max(csvRows.length, gvizRows.length);
+
+      for (let r = 0; r < maxLen; r++) {
+        const cRow = csvRows[r] || [];
+        const gRow = (gvizRows[r] && gvizRows[r].c) ? gvizRows[r].c : [];
+
+        const getCell = (idx) => {
+          const fromCsv = (idx >= 0 && idx < cRow.length && cRow[idx]) ? String(cRow[idx]).trim() : '';
+          if (fromCsv) return fromCsv;
+          if (idx >= 0 && idx < gRow.length && gRow[idx]) {
+            const cell = gRow[idx];
+            return (cell.f || (cell.v !== null && cell.v !== undefined ? String(cell.v) : '')).trim();
+          }
+          return '';
+        };
+
+        rawRows.push({
+          colB: getCell(idxB),
+          colC: getCell(idxC),
+          colD: getCell(idxD),
+          colF: getCell(idxF),
+          colG: getCell(idxG),
+          colH: getCell(idxH)
+        });
+      }
+
+      let lastB = '';
+      let lastF = '';
+
+      for (let i = 0; i < rawRows.length; i++) {
+        const row = rawRows[i];
+
+        if (row.colB && !isHeaderOrTimeText(row.colB)) {
+          lastB = row.colB;
+        } else if (!row.colB && (row.colC || row.colD) && lastB) {
+          row.colB = lastB;
+        }
+
+        if (row.colF && !isHeaderOrTimeText(row.colF)) {
+          lastF = row.colF;
+        } else if (!row.colF && (row.colG || row.colH) && lastF) {
+          row.colF = lastF;
+        }
+      }
+
+      return rawRows;
+    }
+
+    // แปลงข้อมูลตารางเรียนในแต่ละสัปดาห์
     function parseSheetTable(sheetName, table) {
-
       const rows = table.rows || [];
-
       const defaultWeekMatch = sheetName.match(/\d+/);
-
       const defaultWeek = defaultWeekMatch ? defaultWeekMatch[0] : '';
-
       const records = [];
 
-
-
-      // ใช้ตำแหน่งคอลัมน์คงที่ตามไฟล์ Google Sheets ของคุณ:
-
-      // Col E (Index 4) = 09.00 - 12.00 น.
-
-      // Col F (Index 5) = 13.00 - 16.00 น.
-
-      // Col G (Index 6) = 16.00 - 19.00 น.
-
       let timeSlots = [
-
         { col: 4, label: '09.00 - 12.00 น.' },
-
         { col: 5, label: '13.00 - 16.00 น.' },
-
         { col: 6, label: '16.00 - 19.00 น.' }
-
       ];
-
-
 
       let headerRowIdx = -1;
 
-
-
-      // ค้นหาแถวหัวตารางเพื่อระบุจุดเริ่มต้นข้อมูล
-
       for (let r = 0; r < Math.min(rows.length, 10); r++) {
-
         const row = rows[r];
-
         if (!row || !row.c) continue;
-
         const line = row.c.map(c => (c && (c.f || c.v !== null ? (c.f || String(c.v)) : '')) || '').join(' ');
-
         if (line.includes('9.00') || line.includes('13.00')) {
-
           headerRowIdx = r;
-
           break;
-
         }
-
       }
-
-
 
       const startRow = headerRowIdx !== -1 ? headerRowIdx + 1 : 5;
 
-
-
       let currentRoom = '';
-
       let currentLab = '';
-
       let currentWeek = defaultWeek;
-
       let currentDay = '';
-
       let currentDate = '';
 
-
-
       for (let r = startRow; r < rows.length; r++) {
-
         const row = rows[r];
-
         if (!row || !row.c) continue;
 
-
-
         const getVal = (idx) => {
-
           const c = row.c[idx];
-
           if (!c) return '';
-
-          return (c.f || (c.v !== null && c.v !== undefined ? String(c.v) : '')).replace(/\[merged\]\s*/gi, '').trim();
-
+          return (c.f || (c.v !== null && c.v !== undefined ? String(c.v) : '')).replace(/[merged]\s*/gi, '').trim();
         };
 
-
-
-        const c0 = getVal(0); // สัปดาห์
-
-        const c1 = getVal(1); // ห้อง หรือ ชื่อแลป
-
-        const c2 = getVal(2); // วัน
-
-        const c3 = getVal(3); // วันที่
-
-
+        const c0 = getVal(0);
+        const c1 = getVal(1);
+        const c2 = getVal(2);
+        const c3 = getVal(3);
 
         if (c0 && /^\d+$/.test(c0)) {
-
           currentWeek = c0;
-
         }
 
-
-
-        const isRoom = c1 && (c1.startsWith('_') || /^ห้อง/i.test(c1) || /^ST\d+/i.test(c1) || /^DLearn/i.test(c1));
-
-
+        const isRoom = c1 && (c1.startsWith('_') || /^ห้อง/i.test(c1) || /^ST\d+/i.test(c1) || /^DLearn/i.test(c1) || /^Lan\s*\(/i.test(c1));
 
         if (isRoom) {
-
-          currentRoom = c1.replace(/^[_]/, '').trim();
-
+          currentRoom = formatRoomName(c1);
           currentLab = '';
-
           currentDay = '';
-
           currentDate = '';
 
-
-
           for (let look = r + 1; look < Math.min(rows.length, r + 7); look++) {
-
             const nextRow = rows[look];
-
             if (!nextRow || !nextRow.c) continue;
-
-            const nextC1 = (nextRow.c[1] ? (nextRow.c[1].f || String(nextRow.c[1].v || '')).replace(/\[merged\]\s*/gi, '').trim() : '');
-
-            if (nextC1 && !nextC1.startsWith('_') && !/^ห้อง/i.test(nextC1) && !/^ST\d+/i.test(nextC1) && !/^DLearn/i.test(nextC1)) {
-
+            const nextC1 = (nextRow.c[1] ? (nextRow.c[1].f || String(nextRow.c[1].v || '')).replace(/[merged]\s*/gi, '').trim() : '');
+            if (nextC1 && !nextC1.startsWith('_') && !/^ห้อง/i.test(nextC1) && !/^ST\d+/i.test(nextC1) && !/^DLearn/i.test(nextC1) && !/^Lan\s*\(/i.test(nextC1)) {
               currentLab = nextC1;
-
               break;
-
             }
-
           }
-
         } else if (c1 && !currentLab && !isRoom) {
-
           currentLab = c1;
-
         }
-
-
-
-        // จดจำวันและวันที่ (รองรับกรณีเซลล์ผสานแนวตั้ง)
 
         if (c2 && (c2.includes('จันทร์') || c2.includes('อังคาร') || c2.includes('พุธ') || c2.includes('พฤหัส') || c2.includes('ศุกร์') || c2.includes('เสาร์') || c2.includes('อาทิตย์'))) {
-
           currentDay = c2;
-
         }
-
         if (c3 && /\d+/.test(c3)) {
-
           currentDate = c3;
-
         }
-
-
 
         const activeDay = c2 || currentDay;
-
         const activeDate = c3 || currentDate;
-
         const isSchedule = activeDay || activeDate;
 
-
-
         if (isSchedule && currentRoom) {
-
           timeSlots.forEach(slot => {
-
             const cellVal = getVal(slot.col);
-
             if (cellVal && cellVal !== '-' && cellVal !== '') {
-
               records.push({
-
                 week: currentWeek || defaultWeek,
-
-                room: currentRoom,
-
+                room: formatRoomName(currentRoom),
                 lab: currentLab || 'ปฏิบัติการฟิสิกส์ 1',
-
                 day: activeDay,
-
                 date: activeDate,
-
                 time: slot.label,
-
                 secText: cellVal
-
               });
-
             }
-
           });
-
         }
-
       }
-
-
 
       return records;
-
     }
 
-
-
     function populateDropdowns(allRecords) {
-
       const secSelect = document.getElementById('secSelect');
-
       const labSelect = document.getElementById('labSelect');
 
-
-
       const secSet = new Set();
-
       let hasPhy1Group = false;
-
       const labSet = new Set();
-
       labToRoomMap = {};
 
-
-
       allRecords.forEach(item => {
-
         if (item.secText) {
-
           if (/01\s*,\s*02\s*\(Phy\s*1\)/i.test(item.secText)) {
-
             hasPhy1Group = true;
-
           } else {
-
-            const cleaned = item.secText.replace(/Phy\s*\d+/gi, '').replace(/ฟิสิกส์\s*\d+/gi, '');
-
+            const cleaned = item.secText.replace(/Phy\s*\d+/gi, '').replace(/ฟิสิกส์\s*\d+/gi, '').replace(/sec/gi, '').replace(/sc/gi, '');
             const nums = cleaned.match(/\d+/g);
-
             if (nums) {
-
               nums.forEach(n => {
-
                 const val = parseInt(n, 10);
-
                 if (!isNaN(val) && val > 0 && val < 200) {
-
                   secSet.add(val);
-
                 }
-
               });
-
             }
-
           }
-
         }
-
-
 
         if (item.lab && item.lab !== 'ปฏิบัติการฟิสิกส์ 1') {
-
           const cleanLab = item.lab.trim();
-
           labSet.add(cleanLab);
-
           if (item.room && !labToRoomMap[cleanLab]) {
-
-            labToRoomMap[cleanLab] = item.room.trim();
-
+            labToRoomMap[cleanLab] = formatRoomName(item.room);
           }
-
         }
-
       });
-
-
-
-      // วาง Sec 01,02 (Phy1) อยู่บนสุดของรายการตัวเลือก
 
       const sortedSecs = Array.from(secSet).sort((a, b) => a - b);
-
       const currSec = secSelect.value;
-
       secSelect.innerHTML = '<option value="">-- เลือก Sec เรียน --</option>';
 
-
-
+      // ให้ Sec 01,02 (Phy1) อยู่บนสุดของ Dropdown
       if (hasPhy1Group) {
-
         const phyOpt = document.createElement('option');
-
         phyOpt.value = '01,02 (Phy1)';
-
         phyOpt.textContent = 'Sec 01,02 (Phy1)';
-
         secSelect.appendChild(phyOpt);
-
       }
 
-
-
       sortedSecs.forEach(secNum => {
-
         const padded = secNum < 10 ? '0' + secNum : secNum;
-
         const opt = document.createElement('option');
-
         opt.value = secNum;
-
         opt.textContent = `Sec ${padded}`;
-
         secSelect.appendChild(opt);
-
       });
-
-
 
       if (currSec) secSelect.value = currSec;
 
-
-
       const sortedLabs = Array.from(labSet).sort();
-
       const currLab = labSelect.value;
-
       labSelect.innerHTML = '<option value="">-- เลือกชื่อปฏิบัติการ --</option>';
-
       sortedLabs.forEach(lab => {
-
         const opt = document.createElement('option');
-
         opt.value = lab;
-
         opt.textContent = lab;
-
         labSelect.appendChild(opt);
-
       });
-
       if (currLab) labSelect.value = currLab;
-
     }
-
-
 
     async function loadAllScheduleData() {
-
       if (cachedSchedule) return cachedSchedule;
-
       if (isFetching) return [];
 
-
-
       isFetching = true;
-
       const statusArea = document.getElementById('statusArea');
-
       const statusText = document.getElementById('statusText');
-
       statusArea.style.display = 'block';
+      statusText.textContent = 'กำลังดึงข้อมูลตารางเรียนและรายชื่อผู้สอน...';
 
-      statusText.textContent = 'กำลังดึงข้อมูลตารางเรียนจาก Google Sheets ทั้ง 15 สัปดาห์...';
+      const weekPromises = WEEKS.map(w => fetchSheetJSONP(w, false));
+      const [weekResults, teachersRows] = await Promise.all([
+        Promise.all(weekPromises),
+        loadTeachersData()
+      ]);
 
-
-
-      const promises = WEEKS.map(w => fetchSheetJSONP(w));
-
-      const results = await Promise.all(promises);
-
-
+      teachersRawData = teachersRows || [];
 
       let allRecords = [];
-
-      results.forEach(res => {
-
+      weekResults.forEach(res => {
         if (res && res.table) {
-
           const recs = parseSheetTable(res.sheetName, res.table);
-
           allRecords = allRecords.concat(recs);
-
         }
-
       });
-
-
 
       cachedSchedule = allRecords;
-
       isFetching = false;
-
       statusArea.style.display = 'none';
 
-
-
       populateDropdowns(allRecords);
-
       return cachedSchedule;
-
     }
-
-
 
     function matchSec(cellText, targetSecVal) {
-
       if (!cellText || !targetSecVal) return false;
 
-
-
       const isPhy1Target = (targetSecVal === '01,02 (Phy1)');
-
       const cellIsPhy1 = /01\s*,\s*02\s*\(Phy\s*1\)/i.test(cellText);
 
-
-
       if (isPhy1Target) return cellIsPhy1;
-
       if (cellIsPhy1) return false;
 
-
-
       const num = parseInt(targetSecVal, 10);
-
       if (isNaN(num)) return false;
 
-
-
-      const cleaned = cellText.replace(/Phy\s*\d+/gi, '').replace(/ฟิสิกส์\s*\d+/gi, '');
-
+      const cleaned = cellText.replace(/Phy\s*\d+/gi, '').replace(/ฟิสิกส์\s*\d+/gi, '').replace(/sec/gi, '').replace(/sc/gi, '');
       const numbers = cleaned.match(/\d+/g);
-
       if (!numbers) return false;
 
-
-
       return numbers.some(n => parseInt(n, 10) === num);
-
     }
-
-
 
     function parseThaiDate(str) {
-
       if (!str) return null;
-
       const s = str.trim();
-
       for (const [mName, mNum] of Object.entries(thaiMonths)) {
-
         if (s.includes(mName)) {
-
           const parts = s.split(mName);
-
           const dayMatch = parts[0].match(/\d+/);
-
           const yearMatch = parts[1] ? parts[1].match(/\d+/) : null;
-
           if (dayMatch) {
-
             const day = parseInt(dayMatch[0], 10);
-
             let year = null;
-
             if (yearMatch) {
-
               let y = parseInt(yearMatch[0], 10);
-
               if (y < 100) y += 2500;
-
               if (y > 2400) y -= 543;
-
               year = y;
-
             } else {
-
               year = new Date().getFullYear();
-
             }
-
             return { day, month: mNum, year };
-
           }
-
         }
-
       }
-
       return null;
-
     }
-
-
 
     function getJSDate(sheetDateStr) {
-
       const parsed = parseThaiDate(sheetDateStr);
-
       if (!parsed) return null;
-
       return new Date(parsed.year, parsed.month - 1, parsed.day);
-
     }
-
-
 
     function isCurrentOrFuture(sheetDateStr) {
-
       const d = getJSDate(sheetDateStr);
-
       if (!d) return false;
-
       const now = new Date();
-
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
       return d.getTime() >= today.getTime();
-
     }
-
-
 
     function isSameDate(calendarVal, sheetDateStr) {
-
       if (!calendarVal || !sheetDateStr) return false;
-
       const [y, m, d] = calendarVal.split('-').map(Number);
-
       const parsedSheet = parseThaiDate(sheetDateStr);
-
       if (!parsedSheet) return false;
 
-
-
       const dayMatch = parsedSheet.day === d;
-
       const monthMatch = parsedSheet.month === m;
-
       const yearMatch = parsedSheet.year ? parsedSheet.year === y : true;
 
-
-
       return dayMatch && monthMatch && yearMatch;
-
     }
-
-
 
     function isDateAfterOrEqual(calendarVal, sheetDateStr) {
-
       if (!calendarVal || !sheetDateStr) return false;
-
       const [y, m, d] = calendarVal.split('-').map(Number);
-
       const calDate = new Date(y, m - 1, d);
-
       const sheetDate = getJSDate(sheetDateStr);
-
       if (!sheetDate) return false;
-
       return sheetDate.getTime() >= calDate.getTime();
-
     }
 
+    // ฟังก์ชันดึงชื่อผู้สอนโดยเช็กคอลัมน์ B (ดึง C หรือ D) และคอลัมน์ F (ดึง G หรือ H)
+    function getTeachersForSec(secText, weekNumber) {
+      if (!secText || !teachersRawData || teachersRawData.length === 0) return [];
 
+      const isPhy1Target = /01\s*,\s*02/i.test(secText) || /Phy\s*1/i.test(secText);
+
+      const extractSecNums = (str) => {
+        if (!str || isHeaderOrTimeText(str)) return [];
+        const s = str.replace(/phy\s*\d+/ig, '').replace(/ฟิสิกส์\s*\d+/ig, '').replace(/sec/ig, '').replace(/sc/ig, '');
+        const matches = s.match(/\d+/g);
+        return matches ? matches.map(n => parseInt(n, 10)) : [];
+      };
+
+      const targetNums = extractSecNums(secText);
+      if (!isPhy1Target && targetNums.length === 0) return [];
+
+      const wkMatch = String(weekNumber).match(/\d+/);
+      const wkNum = wkMatch ? parseInt(wkMatch[0], 10) : 1;
+      const isEarlyWeek = (wkNum >= 1 && wkNum <= 8);
+
+      const checkCellMatch = (cellStr) => {
+        if (!cellStr || isHeaderOrTimeText(cellStr)) return false;
+        const cellIsPhy1 = /01\s*,\s*02/i.test(cellStr) || /Phy\s*1/i.test(cellStr);
+
+        if (isPhy1Target) {
+          return cellIsPhy1;
+        }
+        if (cellIsPhy1) return false;
+
+        const cellNums = extractSecNums(cellStr);
+        return cellNums.some(n => targetNums.includes(n));
+      };
+
+      const foundTeachers = [];
+
+      for (let i = 0; i < teachersRawData.length; i++) {
+        const row = teachersRawData[i];
+
+        // 1. เช็กคอลัมน์ B -> ถ้าตรง: สัปดาห์ 1-8 ดึงจาก C, สัปดาห์ 9-15 ดึงจาก D
+        if (checkCellMatch(row.colB)) {
+          const tName = isEarlyWeek ? row.colC : row.colD;
+          if (tName && !/สัปดาห์|ผู้สอน/i.test(tName)) {
+            foundTeachers.push(tName);
+          }
+        }
+
+        // 2. เช็กคอลัมน์ F -> ถ้าตรง: สัปดาห์ 1-8 ดึงจาก G, สัปดาห์ 9-15 ดึงจาก H
+        if (checkCellMatch(row.colF)) {
+          const tName = isEarlyWeek ? row.colG : row.colH;
+          if (tName && !/สัปดาห์|ผู้สอน/i.test(tName)) {
+            foundTeachers.push(tName);
+          }
+        }
+      }
+
+      const finalTeachers = [];
+      foundTeachers.forEach(t => {
+        t.split(/[\n,]+/).forEach(part => {
+          const clean = part.trim();
+          if (clean && clean !== '-') {
+            finalTeachers.push(clean);
+          }
+        });
+      });
+
+      return [...new Set(finalTeachers)];
+    }
 
     // ฟังก์ชันค้นหา 1: ค้นหาตาม Sec
-
     async function doSearch() {
-
       const secSelect = document.getElementById('secSelect');
-
       const selectedSec = secSelect.value;
-
       const dateInput = document.getElementById('dateInput').value;
-
       const resultsContainer = document.getElementById('resultsContainer');
-
       const emptyState = document.getElementById('emptyState');
-
       const cardsList = document.getElementById('cardsList');
-
       const resultsCount = document.getElementById('resultsCount');
-
       const resultsTitle = document.getElementById('resultsTitle');
 
-
-
       resultsContainer.style.display = 'none';
-
       emptyState.style.display = 'none';
-
       cardsList.innerHTML = '';
-
       resultsCount.textContent = '0 รายการ';
-
       resultsTitle.textContent = '';
-
-
 
       if (!selectedSec) {
-
         alert('กรุณาเลือก Sec เรียนที่ต้องการค้นหา');
-
         secSelect.focus();
-
         return;
-
       }
-
-
 
       const data = await loadAllScheduleData();
 
-
-
       if (!data || data.length === 0) {
-
         emptyState.style.display = 'block';
-
         document.getElementById('emptyMessage').textContent = 'ไม่สามารถดึงข้อมูลจาก Google Sheets ได้ หรือยังไม่มีการแชร์สาธารณะ';
-
         return;
-
       }
 
-
-
       let filtered = data.filter(item => {
-
         const matchesSec = matchSec(item.secText, selectedSec);
-
         if (!matchesSec) return false;
 
-
-
         if (dateInput) {
-
           return isSameDate(dateInput, item.date);
-
         }
 
-
-
         return true;
-
       });
-
-
 
       filtered.sort((a, b) => {
-
         const wa = parseInt(a.week, 10) || 0;
-
         const wb = parseInt(b.week, 10) || 0;
-
         return wa - wb;
-
       });
 
-
-
-      // กรองข้อมูลซ้ำแบบสมบูรณ์ 100% (ซ้ำทั้ง วันที่, เวลา, ชื่อปฏิบัติการ และห้องเรียน)
-
+      // ตัดรายการที่ซ้ำกันทั้ง วันที่, เวลา, ชื่อปฏิบัติการ และห้องเรียน ให้แสดงเพียงอันเดียว
       const seenExact = new Set();
-
       filtered = filtered.filter(item => {
+        const dPart = item.date ? item.date.replace(/\s+/g, '') : `Wk${item.week}_${item.day}`.replace(/\s+/g, '');
+        const tPart = (item.time || '').replace(/\s+/g, '');
+        const lPart = (item.lab || '').replace(/\s+/g, '');
+        const rPart = formatRoomName(item.room).replace(/\s+/g, '');
+        const exactKey = `${dPart}_${tPart}_${lPart}_${rPart}`.toLowerCase();
 
-        const exactKey = `${(item.date || '').trim()}_${(item.time || '').trim()}_${(item.lab || '').trim()}_${(item.room || '').trim()}`;
-
-        if (exactKey && seenExact.has(exactKey)) {
-
-          return false;
-
-        }
-
-        if (exactKey) {
-
-          seenExact.add(exactKey);
-
-        }
-
+        if (seenExact.has(exactKey)) return false;
+        seenExact.add(exactKey);
         return true;
-
       });
 
-
-
-      const secLabel = selectedSec === '01,02 (Phy1)' 
-
-        ? '01,02 (Phy1)' 
-
+      const secLabel = selectedSec === '01,02 (Phy1)'
+        ? '01,02 (Phy1)'
         : (parseInt(selectedSec, 10) < 10 ? '0' + parseInt(selectedSec, 10) : selectedSec);
 
-
-
       if (filtered.length === 0) {
-
         emptyState.style.display = 'block';
-
         document.getElementById('emptyMessage').textContent = `ไม่พบข้อมูลตารางเรียนสำหรับ Sec ${secLabel}` + (dateInput ? ` ในวันที่เลือก` : '');
-
         document.getElementById('emptySubMessage').textContent = 'กรุณาตรวจสอบ Sec หรือวันที่ที่ระบุอีกครั้ง';
-
         return;
-
       }
 
-
-
       cardsList.innerHTML = '';
-
       filtered.forEach(item => {
-
         const card = document.createElement('div');
-
         card.className = 'schedule-card';
-
-
 
         const dayDate = [item.day, item.date].filter(Boolean).join(' ที่ ');
 
+        // ดึงชื่ออาจารย์ผู้สอนตาม Sec และสัปดาห์
+        const teachers = getTeachersForSec(selectedSec, item.week);
+        const finalTeachers = teachers.length > 0 ? teachers : getTeachersForSec(item.secText, item.week);
+        const teachersHtml = finalTeachers.length > 0
+          ? `<span class="meta-item teacher-item">👨‍🏫 ผู้สอน: ${finalTeachers.join(', ')}</span>`
+          : `<span class="meta-item teacher-empty">👨‍🏫 ผู้สอน: (รอระบุ)</span>`;
 
+        let displaySec = item.secText.replace(/sc\s*/gi, 'Sec ').replace(/sec\s*/gi, 'Sec ');
+        if (!displaySec.toLowerCase().includes('sec')) displaySec = `Sec ${displaySec}`;
+        displaySec = displaySec.replace(/\s+/g, ' ').trim();
+
+        const roomDisplay = formatRoomName(item.room);
 
         card.innerHTML = `
-
           <div class="card-week">
-
             <div class="wk-lbl">สัปดาห์ที่</div>
-
             <div class="wk-num">${item.week || '-'}</div>
-
           </div>
-
           <div class="card-details">
-
             <div class="lab-title">🔬 ${item.lab}</div>
-
             <div class="card-meta">
-
               <span class="meta-item">📅 ${dayDate || 'ตามประกาศในตาราง'}</span>
-
-              <span class="meta-item">👥 ${item.secText}</span>
-
+              <span class="meta-item">👥 ${displaySec}</span>
+              ${teachersHtml}
             </div>
-
           </div>
-
           <div class="card-badges">
-
-            <span class="badge-room">🏢 ห้อง ${item.room}</span>
-
+            <span class="badge-room">🏢 ห้อง ${roomDisplay}</span>
             <span class="badge-time">⏰ ${item.time}</span>
-
           </div>
-
         `;
-
         cardsList.appendChild(card);
-
       });
 
-
-
       resultsTitle.textContent = `ตารางเรียน Sec ${secLabel}` + (dateInput ? ` (เฉพาะวันที่เลือก)` : ` (แสดงตามสัปดาห์ที่มีเรียน)`);
-
       resultsCount.textContent = `พบ ${filtered.length} คาบเรียน`;
-
       resultsContainer.style.display = 'block';
-
     }
 
-
-
     // ฟังก์ชันค้นหา 2: ค้นหาห้องเรียนที่มีการเรียนการสอน
-
     async function doSearchRoom() {
-
       const labSelect = document.getElementById('labSelect');
-
       const selectedLab = labSelect.value.trim();
-
       const roomDateInput = document.getElementById('roomDateInput');
-
       const selectedDate = roomDateInput.value;
-
       const scope = document.querySelector('input[name="roomScope"]:checked').value;
 
-
-
       const resultsContainer = document.getElementById('resultsContainer');
-
       const emptyState = document.getElementById('emptyState');
-
       const cardsList = document.getElementById('cardsList');
-
       const resultsCount = document.getElementById('resultsCount');
-
       const resultsTitle = document.getElementById('resultsTitle');
 
-
-
       resultsContainer.style.display = 'none';
-
       emptyState.style.display = 'none';
-
       cardsList.innerHTML = '';
-
       resultsCount.textContent = '0 รายการ';
-
       resultsTitle.textContent = '';
 
-
-
       if (!selectedLab) {
-
         alert('กรุณาเลือกชื่อปฏิบัติการที่ต้องการค้นหา');
-
         labSelect.focus();
-
         return;
-
       }
-
-
 
       if (!selectedDate) {
-
         alert('กรุณาเลือกวัน/เดือน/ปี ที่เรียนจากปฏิทิน (ระบบบังคับเลือกวันที่สำหรับการค้นหานี้)');
-
         roomDateInput.focus();
-
         return;
-
       }
-
-
 
       const [y, m, d] = selectedDate.split('-').map(Number);
-
       const chosenDateObj = new Date(y, m - 1, d);
-
       const now = new Date();
-
       const todayObj = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-
-
       if (chosenDateObj.getTime() < todayObj.getTime()) {
-
         emptyState.style.display = 'block';
-
         document.getElementById('emptyMessage').textContent = '⚠️ วันที่เลือกเป็นอดีตที่ผ่านมาแล้ว';
-
         document.getElementById('emptySubMessage').textContent = 'ระบบกำหนดให้แสดงผลเฉพาะตารางเรียนที่เป็นปัจจุบันและอนาคตเท่านั้น กรุณาเลือกวันที่ใหม่';
-
         return;
-
       }
-
-
 
       const data = await loadAllScheduleData();
 
-
-
       if (!data || data.length === 0) {
-
         emptyState.style.display = 'block';
-
         document.getElementById('emptyMessage').textContent = 'ไม่สามารถดึงข้อมูลจาก Google Sheets ได้';
-
         return;
-
       }
-
-
 
       let filtered = data.filter(item => {
-
         if (!isCurrentOrFuture(item.date)) return false;
 
-
-
         if (scope === 'exact') {
-
           if (!isSameDate(selectedDate, item.date)) return false;
-
         } else {
-
           if (!isDateAfterOrEqual(selectedDate, item.date)) return false;
-
         }
-
-
 
         if (item.lab.toLowerCase() !== selectedLab.toLowerCase()) {
-
           return false;
-
         }
 
-
-
         return true;
-
       });
-
-
 
       filtered.sort((a, b) => {
-
         const da = getJSDate(a.date);
-
         const db = getJSDate(b.date);
-
         if (da && db && da.getTime() !== db.getTime()) {
-
           return da.getTime() - db.getTime();
-
         }
-
         return (a.time || '').localeCompare(b.time || '');
-
       });
-
-
-
-      // กรองข้อมูลซ้ำแบบสมบูรณ์ 100% (ซ้ำทั้ง วันที่, เวลา, ชื่อปฏิบัติการ และห้องเรียน)
 
       const seenExact = new Set();
-
       filtered = filtered.filter(item => {
+        const dPart = item.date ? item.date.replace(/\s+/g, '') : `Wk${item.week}_${item.day}`.replace(/\s+/g, '');
+        const tPart = (item.time || '').replace(/\s+/g, '');
+        const lPart = (item.lab || '').replace(/\s+/g, '');
+        const rPart = formatRoomName(item.room).replace(/\s+/g, '');
+        const exactKey = `${dPart}_${tPart}_${lPart}_${rPart}`.toLowerCase();
 
-        const exactKey = `${(item.date || '').trim()}_${(item.time || '').trim()}_${(item.lab || '').trim()}_${(item.room || '').trim()}`;
-
-        if (exactKey && seenExact.has(exactKey)) {
-
-          return false;
-
-        }
-
-        if (exactKey) {
-
-          seenExact.add(exactKey);
-
-        }
-
+        if (seenExact.has(exactKey)) return false;
+        seenExact.add(exactKey);
         return true;
-
       });
 
-
-
       if (filtered.length === 0) {
-
         emptyState.style.display = 'block';
-
         const autoRoomVal = document.getElementById('autoRoomInput').value;
-
         const roomStr = autoRoomVal ? `(${autoRoomVal})` : '';
-
         document.getElementById('emptyMessage').textContent = `ไม่พบข้อมูลการเรียนการสอนใน ${selectedLab} ${roomStr}`;
-
         document.getElementById('emptySubMessage').textContent = 'อาจเป็นห้องว่างในวันดังกล่าว หรือไม่มีตารางเรียนในช่วงที่เป็นปัจจุบันและอนาคต';
-
         return;
-
       }
 
-
-
       cardsList.innerHTML = '';
-
       filtered.forEach(item => {
-
         const card = document.createElement('div');
-
         card.className = 'schedule-card';
-
-
 
         const dayDate = [item.day, item.date].filter(Boolean).join(' ที่ ');
 
+        const teachers = getTeachersForSec(item.secText, item.week);
+        const teachersHtml = teachers.length > 0
+          ? `<span class="meta-item teacher-item">👨‍🏫 ผู้สอน: ${teachers.join(', ')}</span>`
+          : `<span class="meta-item teacher-empty">👨‍🏫 ผู้สอน: (รอระบุ)</span>`;
 
+        let displaySec = item.secText.replace(/sc\s*/gi, 'Sec ').replace(/sec\s*/gi, 'Sec ');
+        if (!displaySec.toLowerCase().includes('sec')) displaySec = `Sec ${displaySec}`;
+        displaySec = displaySec.replace(/\s+/g, ' ').trim();
+
+        const roomDisplay = formatRoomName(item.room);
 
         card.innerHTML = `
-
           <div class="card-week">
-
             <div class="wk-lbl">สัปดาห์ที่</div>
-
             <div class="wk-num">${item.week || '-'}</div>
-
           </div>
-
           <div class="card-details">
-
             <div class="lab-title">🔬 ${item.lab}</div>
-
             <div class="card-meta">
-
               <span class="meta-item">📅 วัน${dayDate || 'ตามตาราง'}</span>
-
-              <span class="meta-item">👥 กลุ่ม: ${item.secText}</span>
-
+              <span class="meta-item">👥 กลุ่ม: ${displaySec}</span>
+              ${teachersHtml}
             </div>
-
           </div>
-
           <div class="card-badges">
-
-            <span class="badge-room">🏢 ห้อง ${item.room}</span>
-
+            <span class="badge-room">🏢 ห้อง ${roomDisplay}</span>
             <span class="badge-time">⏰ ${item.time}</span>
-
           </div>
-
         `;
-
         cardsList.appendChild(card);
-
       });
 
-
-
-      const roomText = filtered[0] && filtered[0].room ? `ห้อง ${filtered[0].room} - ` : '';
-
+      const roomText = filtered[0] && filtered[0].room ? `ห้อง ${formatRoomName(filtered[0].room)} - ` : '';
       const titleScope = scope === 'exact' ? `(เฉพาะวันที่เลือก)` : `(ปัจจุบันและอนาคต)`;
-
       resultsTitle.textContent = `ตารางเรียน ${roomText}${selectedLab} ${titleScope}`;
-
       resultsCount.textContent = `พบ ${filtered.length} คาบการสอน`;
-
       resultsContainer.style.display = 'block';
-
     }
-
-
 
     async function resetAll() {
-
       document.getElementById('secSelect').value = '';
-
       document.getElementById('dateInput').value = '';
-
       document.getElementById('clearDateBtn').style.display = 'none';
-
       document.getElementById('resultsContainer').style.display = 'none';
-
       document.getElementById('emptyState').style.display = 'none';
-
       document.getElementById('cardsList').innerHTML = '';
 
-
-
       cachedSchedule = null;
-
       await loadAllScheduleData();
-
     }
-
-
 
     async function resetRoomSearch() {
-
       document.getElementById('labSelect').value = '';
-
       document.getElementById('autoRoomInput').value = '';
-
       document.getElementById('roomDateInput').value = '';
-
       document.getElementById('resultsContainer').style.display = 'none';
-
       document.getElementById('emptyState').style.display = 'none';
-
       document.getElementById('cardsList').innerHTML = '';
 
-
-
       cachedSchedule = null;
-
       await loadAllScheduleData();
-
     }
 
-
-
     document.getElementById('labSelect').addEventListener('change', (e) => {
-
       const selectedLab = e.target.value.trim();
-
       const autoRoomInput = document.getElementById('autoRoomInput');
 
-
-
       if (!selectedLab) {
-
         autoRoomInput.value = '';
-
         return;
-
       }
-
-
 
       if (labToRoomMap[selectedLab]) {
-
-        autoRoomInput.value = `ห้อง ${labToRoomMap[selectedLab]}`;
-
+        autoRoomInput.value = `ห้อง ${formatRoomName(labToRoomMap[selectedLab])}`;
       } else if (cachedSchedule) {
-
         const found = cachedSchedule.find(item => item.lab === selectedLab && item.room);
-
         if (found && found.room) {
-
-          autoRoomInput.value = `ห้อง ${found.room}`;
-
+          autoRoomInput.value = `ห้อง ${formatRoomName(found.room)}`;
         } else {
-
           autoRoomInput.value = 'ไม่พบข้อมูลห้อง';
-
         }
-
       }
-
     });
-
-
 
     const tabSecBtn = document.getElementById('tabSecBtn');
-
     const tabRoomBtn = document.getElementById('tabRoomBtn');
-
     const searchSecCard = document.getElementById('searchSecCard');
-
     const searchRoomCard = document.getElementById('searchRoomCard');
-
     const resultsContainer = document.getElementById('resultsContainer');
-
     const emptyState = document.getElementById('emptyState');
 
-
-
     tabSecBtn.addEventListener('click', () => {
-
       tabSecBtn.classList.add('active');
-
       tabRoomBtn.classList.remove('active');
-
       searchSecCard.style.display = 'block';
-
       searchRoomCard.style.display = 'none';
-
       resultsContainer.style.display = 'none';
-
       emptyState.style.display = 'none';
-
     });
-
-
 
     tabRoomBtn.addEventListener('click', () => {
-
       tabRoomBtn.classList.add('active');
-
       tabSecBtn.classList.remove('active');
-
       searchRoomCard.style.display = 'block';
-
       searchSecCard.style.display = 'none';
-
       resultsContainer.style.display = 'none';
-
       emptyState.style.display = 'none';
-
     });
-
-
 
     document.getElementById('searchBtn').addEventListener('click', doSearch);
-
     document.getElementById('resetBtn').addEventListener('click', resetAll);
 
-
-
     document.getElementById('searchRoomBtn').addEventListener('click', doSearchRoom);
-
     document.getElementById('resetRoomBtn').addEventListener('click', resetRoomSearch);
 
-
-
     const dateInputEl = document.getElementById('dateInput');
-
     const clearDateBtn = document.getElementById('clearDateBtn');
 
-
-
     dateInputEl.addEventListener('change', () => {
-
       if (dateInputEl.value) {
-
         clearDateBtn.style.display = 'inline-block';
-
       } else {
-
         clearDateBtn.style.display = 'none';
-
       }
-
     });
-
-
 
     clearDateBtn.addEventListener('click', () => {
-
       dateInputEl.value = '';
-
       clearDateBtn.style.display = 'none';
-
     });
-
-
 
     window.addEventListener('DOMContentLoaded', () => {
-
       const now = new Date();
-
       const yyyy = now.getFullYear();
-
       const mm = String(now.getMonth() + 1).padStart(2, '0');
-
       const dd = String(now.getDate()).padStart(2, '0');
-
       document.getElementById('roomDateInput').value = `${yyyy}-${mm}-${dd}`;
-
       document.getElementById('roomDateInput').min = `${yyyy}-${mm}-${dd}`;
 
-
-
       loadAllScheduleData();
-
     });
-
   </script>
-
 </body>
-
-</html> 
+</html>
