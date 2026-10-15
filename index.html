@@ -410,14 +410,6 @@
       gap: 4px;
     }
 
-    .teacher-item {
-      color: #059669; /* สีเขียวสำหรับผู้สอน */
-      font-weight: 500;
-      background-color: #d1fae5;
-      padding: 2px 8px;
-      border-radius: 6px;
-    }
-
     .card-badges {
       display: flex;
       flex-direction: column;
@@ -648,7 +640,6 @@
     };
 
     let cachedSchedule = null;
-    let teachersData = {}; // เก็บข้อมูลผู้สอน
     let isFetching = false;
     let labToRoomMap = {};
 
@@ -684,6 +675,7 @@
           }
         };
 
+        // ใส่ Cache buster ให้ดึงข้อมูลล่าสุดเสมอ
         script.src = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?sheet=${encodeURIComponent(sheetName)}&tqx=responseHandler:${callbackName}&_t=${Date.now()}`;
         script.onerror = function() {
           if (!isDone) {
@@ -697,132 +689,18 @@
       });
     }
 
-    // ฟังก์ชันดึงข้อมูลผู้สอนจากแท็บ "ชื่อผู้สอน"
-    function parseTeachersTable(table) {
-      const rows = table.rows || [];
-      const teachers = {};
-      
-      // หาแถวเริ่มต้นที่มีข้อมูล Sec
-      let startRow = -1;
-      for(let r=0; r<Math.min(rows.length, 5); r++) {
-         const row = rows[r];
-         if(!row || !row.c) continue;
-         const line = row.c.map(c => (c && (c.f || c.v !== null ? String(c.v) : '')) || '').join(' ');
-         if(line.includes('Sec')) {
-             startRow = r + 1;
-             break;
-         }
-      }
-
-      if(startRow === -1) startRow = 2; // Default ถ้าหาไม่เจอ
-
-      for (let r = startRow; r < rows.length; r++) {
-        const row = rows[r];
-        if (!row || !row.c) continue;
-
-        const getVal = (idx) => {
-          const c = row.c[idx];
-          if (!c) return '';
-          return (c.f || (c.v !== null && c.v !== undefined ? String(c.v) : '')).trim();
-        };
-
-        // 9.00 - 12.00 น.
-        const secMorning = getVal(1); 
-        if(secMorning) {
-            teachers[secMorning] = {
-                t1_8: [getVal(2), getVal(3)].filter(Boolean), // Col C, D สำหรับสัปดาห์ 1-8
-                t9_15: [getVal(4), getVal(5)].filter(Boolean) // Col E, F สำหรับสัปดาห์ 9-15 
-                                                              // หมายเหตุ: จากตัวอย่างชีท Col D คือผู้สอน 1-8 คนที่2 และ Col E, F ไม่มี 
-                                                              // แต่ตามคำสั่ง "ผู้สอนในคอลัมป์ C และ G จะสอนตั้งแต่สัปดาห์ที่ 1-8 และผู้สอนในคอลัมป์ D และ H จะสอนตั้งแต่สัปดาห์ที่ 9-15"
-                                                              // จะปรับ Index คอลัมน์ให้ตรงตามเงื่อนไขที่ให้มา
-            };
-        }
-
-        // ค้นหาทุกเวลา
-        // 9.00 - 12.00 น. (Sec = Col B(1), ครู1-8 = Col C(2) & G(6), ครู9-15 = Col D(3) & H(7))
-        // หมายเหตุ: อิงตาม Index ของ Column A=0, B=1, C=2...
-        // แก้ไขตาม Logic ที่คุณแจ้ง: C,G = wk 1-8 | D,H = wk 9-15 
-        // เนื่องจากโครงสร้างในตัวอย่างไม่ตรงกับคำอธิบายนี้ 100% ผมจะอิงตาม Index ที่ระบุ: C=2, D=3, G=6, H=7
-        
-        // เวลา 9.00 - 12.00 น. (คอลัมน์ B=1)
-        if (getVal(1)) {
-            teachers[getVal(1)] = {
-                t1_8: [getVal(2), getVal(6)].filter(Boolean), // Col C, G
-                t9_15: [getVal(3), getVal(7)].filter(Boolean) // Col D, H
-            };
-        }
-        
-        // เวลา 13.00 - 16.00 น. (สมมติอยู่คอลัมน์ F=5 ตามตัวอย่าง)
-        if (getVal(5)) {
-             teachers[getVal(5)] = {
-                t1_8: [getVal(2), getVal(6)].filter(Boolean), // Col C, G (สมมติใช้ชื่ออาจารย์ช่องเดียวกัน)
-                t9_15: [getVal(3), getVal(7)].filter(Boolean) // Col D, H
-            };
-            
-            // หากตารางจริงรายชื่ออาจารย์แยกตามเวลา (เช่น ครูของ 13.00 อยู่คอลัมน์ G,H) 
-            // ให้รบกวนแจ้งอีกครั้งนะครับ แต่เบื้องต้นผมจะจับคู่ตามโครงสร้างที่คุณแจ้ง
-        }
-
-        // แต่จากตัวอย่างชีท "ชื่อผู้สอน":
-        // 9.00-12.00: Sec (Col B=1), ครู C=2, ครู D=3
-        // 13.00-16.00: Sec (Col F=5), ครู G=6, ครู H=7
-        // งั้นผมขอปรับโค้ดให้สอดคล้องกับภาพตารางที่คุณแนบมาในตัวอย่างนะครับ:
-        // สำหรับ 9.00-12.00: 1-8 คือ Col C(2), 9-15 คือ Col D(3)
-        // สำหรับ 13.00-16.00: 1-8 คือ Col G(6), 9-15 คือ Col H(7)
-
-      }
-
-      // โค้ดดึงข้อมูลผู้สอนตามตัวอย่างชีท "ชื่อผู้สอน" ที่ถูกต้อง:
-      const teachersReal = {};
-      for (let r = startRow; r < rows.length; r++) {
-          const row = rows[r];
-          if (!row || !row.c) continue;
-          const getVal = (idx) => {
-              const c = row.c[idx];
-              return c ? (c.f || (c.v !== null && c.v !== undefined ? String(c.v) : '')).trim() : '';
-          };
-
-          // เวลา 9.00 - 12.00 น. (Sec = Col B[1])
-          const secMorning = getVal(1);
-          if (secMorning) {
-              teachersReal[secMorning] = {
-                  time: '09.00 - 12.00 น.',
-                  t1_8: [getVal(2)].filter(Boolean), // Col C
-                  t9_15: [getVal(3)].filter(Boolean) // Col D
-              };
-          }
-
-          // เวลา 13.00 - 16.00 น. (Sec = Col F[5])
-          const secAfternoon = getVal(5);
-          if (secAfternoon) {
-              teachersReal[secAfternoon] = {
-                  time: '13.00 - 16.00 น.',
-                  t1_8: [getVal(6)].filter(Boolean), // Col G
-                  t9_15: [getVal(7)].filter(Boolean) // Col H
-              };
-          }
-
-          // เวลา 16.00 - 19.00 น. (Sec = Col J[9]) - เผื่อไว้
-          const secEvening = getVal(9);
-          if (secEvening) {
-              teachersReal[secEvening] = {
-                  time: '16.00 - 19.00 น.',
-                  t1_8: [getVal(10)].filter(Boolean), // Col K
-                  t9_15: [getVal(11)].filter(Boolean) // Col L
-              };
-          }
-      }
-
-      return teachersReal;
-    }
-
-    // แปลงข้อมูลตารางเรียน
+    // แปลงโครงสร้างแถวและตาราง โดยตรวจจับตำแหน่งคอลัมน์เวลาทุกช่วงแบบอัตโนมัติ
+    // แปลงข้อมูลใน Google Sheet ออกมาเป็น Object
     function parseSheetTable(sheetName, table) {
       const rows = table.rows || [];
       const defaultWeekMatch = sheetName.match(/\d+/);
       const defaultWeek = defaultWeekMatch ? defaultWeekMatch[0] : '';
       const records = [];
 
+      // ใช้ตำแหน่งคอลัมน์คงที่ตามไฟล์ Google Sheets ของคุณ:
+      // Col E (Index 4) = 09.00 - 12.00 น.
+      // Col F (Index 5) = 13.00 - 16.00 น.
+      // Col G (Index 6) = 16.00 - 19.00 น.
       let timeSlots = [
         { col: 4, label: '09.00 - 12.00 น.' },
         { col: 5, label: '13.00 - 16.00 น.' },
@@ -831,6 +709,7 @@
 
       let headerRowIdx = -1;
 
+      // ค้นหาแถวหัวตารางเพื่อระบุจุดเริ่มต้นข้อมูล
       for (let r = 0; r < Math.min(rows.length, 10); r++) {
         const row = rows[r];
         if (!row || !row.c) continue;
@@ -856,13 +735,13 @@
         const getVal = (idx) => {
           const c = row.c[idx];
           if (!c) return '';
-          return (c.f || (c.v !== null && c.v !== undefined ? String(c.v) : '')).replace(/[merged]\s*/gi, '').trim();
+          return (c.f || (c.v !== null && c.v !== undefined ? String(c.v) : '')).replace(/\[merged\]\s*/gi, '').trim();
         };
 
-        const c0 = getVal(0); 
-        const c1 = getVal(1); 
-        const c2 = getVal(2); 
-        const c3 = getVal(3); 
+        const c0 = getVal(0); // สัปดาห์
+        const c1 = getVal(1); // ห้อง หรือ ชื่อแลป
+        const c2 = getVal(2); // วัน
+        const c3 = getVal(3); // วันที่
 
         if (c0 && /^\d+$/.test(c0)) {
           currentWeek = c0;
@@ -879,7 +758,7 @@
           for (let look = r + 1; look < Math.min(rows.length, r + 7); look++) {
             const nextRow = rows[look];
             if (!nextRow || !nextRow.c) continue;
-            const nextC1 = (nextRow.c[1] ? (nextRow.c[1].f || String(nextRow.c[1].v || '')).replace(/[merged]\s*/gi, '').trim() : '');
+            const nextC1 = (nextRow.c[1] ? (nextRow.c[1].f || String(nextRow.c[1].v || '')).replace(/\[merged\]\s*/gi, '').trim() : '');
             if (nextC1 && !nextC1.startsWith('_') && !/^ห้อง/i.test(nextC1) && !/^ST\d+/i.test(nextC1) && !/^DLearn/i.test(nextC1)) {
               currentLab = nextC1;
               break;
@@ -889,6 +768,7 @@
           currentLab = c1;
         }
 
+        // จดจำวันและวันที่ (รองรับกรณีเซลล์ผสานแนวตั้ง)
         if (c2 && (c2.includes('จันทร์') || c2.includes('อังคาร') || c2.includes('พุธ') || c2.includes('พฤหัส') || c2.includes('ศุกร์') || c2.includes('เสาร์') || c2.includes('อาทิตย์'))) {
           currentDay = c2;
         }
@@ -957,6 +837,7 @@
         }
       });
 
+      // วาง Sec 01,02 (Phy1) อยู่บนสุดของรายการตัวเลือก
       const sortedSecs = Array.from(secSet).sort((a, b) => a - b);
       const currSec = secSelect.value;
       secSelect.innerHTML = '<option value="">-- เลือก Sec เรียน --</option>';
@@ -998,22 +879,16 @@
       const statusArea = document.getElementById('statusArea');
       const statusText = document.getElementById('statusText');
       statusArea.style.display = 'block';
-      statusText.textContent = 'กำลังดึงข้อมูลตารางเรียนจาก Google Sheets...';
+      statusText.textContent = 'กำลังดึงข้อมูลตารางเรียนจาก Google Sheets ทั้ง 15 สัปดาห์...';
 
-      // ดึงข้อมูลตารางเรียน + แท็บชื่อผู้สอนพร้อมกัน
-      const fetchList = [...WEEKS, "ชื่อผู้สอน"];
-      const promises = fetchList.map(w => fetchSheetJSONP(w));
+      const promises = WEEKS.map(w => fetchSheetJSONP(w));
       const results = await Promise.all(promises);
 
       let allRecords = [];
       results.forEach(res => {
         if (res && res.table) {
-          if (res.sheetName === "ชื่อผู้สอน") {
-              teachersData = parseTeachersTable(res.table);
-          } else {
-              const recs = parseSheetTable(res.sheetName, res.table);
-              allRecords = allRecords.concat(recs);
-          }
+          const recs = parseSheetTable(res.sheetName, res.table);
+          allRecords = allRecords.concat(recs);
         }
       });
 
@@ -1106,31 +981,6 @@
       return sheetDate.getTime() >= calDate.getTime();
     }
 
-    // ดึงชื่อผู้สอนจากฐานข้อมูล โดยแยกตามสัปดาห์
-    function getTeachersForSec(secText, weekNumber) {
-        if(!secText || !teachersData) return [];
-        
-        // ค้นหา Sec ที่ตรงกัน (รองรับกรณี Sec หลายกลุ่มในเซลล์เดียว)
-        const cleanedSec = secText.replace(/Phy\s*\d+/gi, '').replace(/ฟิสิกส์\s*\d+/gi, '');
-        const nums = cleanedSec.match(/\d+/g) || [];
-        
-        let foundTeachers = [];
-        const isEarlyWeek = parseInt(weekNumber, 10) <= 8;
-
-        for(let n of nums) {
-            const secKey = parseInt(n, 10).toString();
-            if(teachersData[secKey]) {
-                const list = isEarlyWeek ? teachersData[secKey].t1_8 : teachersData[secKey].t9_15;
-                if(list && list.length > 0) {
-                    foundTeachers = foundTeachers.concat(list);
-                }
-            }
-        }
-        
-        // ลบชื่อซ้ำ
-        return [...new Set(foundTeachers)];
-    }
-
     // ฟังก์ชันค้นหา 1: ค้นหาตาม Sec
     async function doSearch() {
       const secSelect = document.getElementById('secSelect');
@@ -1179,6 +1029,19 @@
         return wa - wb;
       });
 
+      // กรองข้อมูลซ้ำแบบสมบูรณ์ 100% (ซ้ำทั้ง วันที่, เวลา, ชื่อปฏิบัติการ และห้องเรียน)
+      const seenExact = new Set();
+      filtered = filtered.filter(item => {
+        const exactKey = `${(item.date || '').trim()}_${(item.time || '').trim()}_${(item.lab || '').trim()}_${(item.room || '').trim()}`;
+        if (exactKey && seenExact.has(exactKey)) {
+          return false;
+        }
+        if (exactKey) {
+          seenExact.add(exactKey);
+        }
+        return true;
+      });
+
       const secLabel = selectedSec === '01,02 (Phy1)' 
         ? '01,02 (Phy1)' 
         : (parseInt(selectedSec, 10) < 10 ? '0' + parseInt(selectedSec, 10) : selectedSec);
@@ -1196,12 +1059,6 @@
         card.className = 'schedule-card';
 
         const dayDate = [item.day, item.date].filter(Boolean).join(' ที่ ');
-        
-        // ดึงชื่อผู้สอน
-        const teachers = getTeachersForSec(item.secText, item.week);
-        const teachersHtml = teachers.length > 0 
-            ? `<span class="meta-item teacher-item">👨‍🏫 ผู้สอน: ${teachers.join(', ')}</span>`
-            : '';
 
         card.innerHTML = `
           <div class="card-week">
@@ -1213,7 +1070,6 @@
             <div class="card-meta">
               <span class="meta-item">📅 ${dayDate || 'ตามประกาศในตาราง'}</span>
               <span class="meta-item">👥 ${item.secText}</span>
-              ${teachersHtml}
             </div>
           </div>
           <div class="card-badges">
@@ -1306,6 +1162,7 @@
         return (a.time || '').localeCompare(b.time || '');
       });
 
+      // กรองข้อมูลซ้ำแบบสมบูรณ์ 100% (ซ้ำทั้ง วันที่, เวลา, ชื่อปฏิบัติการ และห้องเรียน)
       const seenExact = new Set();
       filtered = filtered.filter(item => {
         const exactKey = `${(item.date || '').trim()}_${(item.time || '').trim()}_${(item.lab || '').trim()}_${(item.room || '').trim()}`;
@@ -1334,12 +1191,6 @@
 
         const dayDate = [item.day, item.date].filter(Boolean).join(' ที่ ');
 
-        // ดึงชื่อผู้สอน
-        const teachers = getTeachersForSec(item.secText, item.week);
-        const teachersHtml = teachers.length > 0 
-            ? `<span class="meta-item teacher-item">👨‍🏫 ผู้สอน: ${teachers.join(', ')}</span>`
-            : '';
-
         card.innerHTML = `
           <div class="card-week">
             <div class="wk-lbl">สัปดาห์ที่</div>
@@ -1350,7 +1201,6 @@
             <div class="card-meta">
               <span class="meta-item">📅 วัน${dayDate || 'ตามตาราง'}</span>
               <span class="meta-item">👥 กลุ่ม: ${item.secText}</span>
-              ${teachersHtml}
             </div>
           </div>
           <div class="card-badges">
