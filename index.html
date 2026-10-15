@@ -659,7 +659,7 @@
     let isFetching = false;
     let labToRoomMap = {};
 
-    // ฟังก์ชันแปลงชื่อห้อง Lan (ออนไลน์) เป็น DLearn (ออนไลน์)
+    // แปลงชื่อห้อง Lan (ออนไลน์) เป็น DLearn (ออนไลน์)
     function formatRoomName(roomStr) {
       if (!roomStr) return '';
       return roomStr
@@ -668,7 +668,7 @@
         .replace(/Lan\s*\(\s*ออนไลน์\s*\)/gi, 'DLearn (ออนไลน์)');
     }
 
-    // ดึงข้อมูลผ่าน JSONP (รองรับ forceNoHeaders = true เพื่อป้องกัน Google API กลืนแถวข้อมูลเป็น Header)
+    // ดึงข้อมูลผ่าน JSONP (รองรับ forceNoHeaders = true เพื่อดึงทุกแถวตั้งแต่แถวที่ 1 โดยไม่โดนรวบเป็น Header)
     function fetchSheetJSONP(sheetName, forceNoHeaders = false) {
       return new Promise((resolve) => {
         const callbackName = 'gvizCallback_' + Math.random().toString(36).substring(2, 9);
@@ -715,50 +715,6 @@
       });
     }
 
-    // แปลงข้อความ CSV เป็น Array 2 มิติ
-    function parseCSV(text) {
-      const rows = [];
-      let row = [];
-      let cur = '';
-      let inQuotes = false;
-
-      for (let i = 0; i < text.length; i++) {
-        const ch = text[i];
-        const next = text[i + 1];
-
-        if (inQuotes) {
-          if (ch === '"' && next === '"') {
-            cur += '"';
-            i++;
-          } else if (ch === '"') {
-            inQuotes = false;
-          } else {
-            cur += ch;
-          }
-        } else {
-          if (ch === '"') {
-            inQuotes = true;
-          } else if (ch === ',') {
-            row.push(cur.trim());
-            cur = '';
-          } else if (ch === '\n' || (ch === '\r' && next === '\n')) {
-            row.push(cur.trim());
-            rows.push(row);
-            row = [];
-            cur = '';
-            if (ch === '\r') i++;
-          } else if (ch !== '\r') {
-            cur += ch;
-          }
-        }
-      }
-      if (cur.length > 0 || row.length > 0) {
-        row.push(cur.trim());
-        rows.push(row);
-      }
-      return rows;
-    }
-
     // ตรวจสอบว่าข้อความในเซลล์เป็นหัวตารางเวลาหรือไม่
     function isHeaderOrTimeText(str) {
       if (!str) return true;
@@ -769,16 +725,10 @@
       return false;
     }
 
-    // ดึงและจัดโครงสร้างข้อมูลจากแท็บ "ชื่อผู้สอน"
+    // ดึงข้อมูลจากแท็บ "ชื่อผู้สอน" ด้วย JSONP (&headers=0) แบบเดียวกับที่ทำงานได้สมบูรณ์บนเครื่อง
     async function loadTeachersData() {
       const sheetName = 'ชื่อผู้สอน';
-
-      const [jsonpRes, csvText] = await Promise.all([
-        fetchSheetJSONP(sheetName, true),
-        fetch(`https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}&_t=${Date.now()}`)
-          .then(r => (r.ok ? r.text() : null))
-          .catch(() => null)
-      ]);
+      const jsonpRes = await fetchSheetJSONP(sheetName, true);
 
       let idxB = 1, idxC = 2, idxD = 3, idxF = 5, idxG = 6, idxH = 7;
 
@@ -794,17 +744,12 @@
       }
 
       const rawRows = [];
-      const csvRows = csvText ? parseCSV(csvText) : [];
       const gvizRows = (jsonpRes && jsonpRes.table && jsonpRes.table.rows) ? jsonpRes.table.rows : [];
-      const maxLen = Math.max(csvRows.length, gvizRows.length);
 
-      for (let r = 0; r < maxLen; r++) {
-        const cRow = csvRows[r] || [];
+      for (let r = 0; r < gvizRows.length; r++) {
         const gRow = (gvizRows[r] && gvizRows[r].c) ? gvizRows[r].c : [];
 
         const getCell = (idx) => {
-          const fromCsv = (idx >= 0 && idx < cRow.length && cRow[idx]) ? String(cRow[idx]).trim() : '';
-          if (fromCsv) return fromCsv;
           if (idx >= 0 && idx < gRow.length && gRow[idx]) {
             const cell = gRow[idx];
             return (cell.f || (cell.v !== null && cell.v !== undefined ? String(cell.v) : '')).trim();
@@ -822,6 +767,7 @@
         });
       }
 
+      // รองรับกรณีมีการผสานเซลล์ (Merge Cells) คอลัมน์ B หรือ F สำหรับอาจารย์คนที่ 2
       let lastB = '';
       let lastF = '';
 
