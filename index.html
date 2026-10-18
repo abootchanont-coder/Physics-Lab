@@ -513,7 +513,7 @@
   <div class="container">
     <!-- Header -->
     <header>
-      <div class="badge-sub">ภาควิชาฟิสิกส์ คณะวิทยาศาสตร์และเทคโนโลยี มหาวิทยาลัยเทคโนโลยีราชมงคลธัญบุรี</div>
+      <div class="badge-sub">ภาควิชาฟิสิกส์ คณะวิทยาศาสตร์และเทคโนโลยี</div>
       <h1>ตารางเรียนวิชาปฏิบัติการฟิสิกส์สำหรับวิศวกร 1 / ปฏิบัติการฟิสิกส์ 1</h1>
       <p class="subtitle">ระบบค้นหาห้องเรียนและเวลาปฏิบัติการ</p>
     </header>
@@ -574,7 +574,7 @@
 
         <div class="form-group">
           <label for="roomDateInput">
-            วัน/เดือน/ปี <span style="color: #ef4444;">*</span>
+            วัน/เดือน/ปี ที่เรียน <span style="color: #ef4444;">*</span>
             <span class="note">(บังคับเลือก)</span>
           </label>
           <input type="date" id="roomDateInput">
@@ -597,7 +597,7 @@
         </label>
         <label class="scope-label">
           <input type="radio" name="roomScope" value="future">
-          <span>แสดงตั้งแต่วันที่เลือกเป็นต้นไป</span>
+          <span>แสดงตั้งแต่วันที่เลือกเป็นต้นไป (ปัจจุบันและอนาคต)</span>
         </label>
       </div>
     </div>
@@ -669,7 +669,7 @@
     }
 
     // ดึงข้อมูลผ่าน JSONP (รองรับ forceNoHeaders = true เพื่อดึงทุกแถวตั้งแต่แถวที่ 1 โดยไม่โดนรวบเป็น Header)
-    function fetchSheetJSONP(sheetName, forceNoHeaders = false) {
+    function fetchSheetJSONP(sheetName, forceNoHeaders = true) {
       return new Promise((resolve) => {
         const callbackName = 'gvizCallback_' + Math.random().toString(36).substring(2, 9);
         const script = document.createElement('script');
@@ -715,6 +715,15 @@
       });
     }
 
+    // สร้างลายเซ็นของตารางเพื่อตรวจสอบว่า Google ส่งชีทแรก (สัปดาห์ที่ 1) ซ้ำมาหรือไม่กรณีชื่อแท็บมีเว้นวรรค
+    function getTableSignature(table) {
+      if (!table || !table.rows) return '';
+      return table.rows.slice(0, 15).map(r => {
+        if (!r || !r.c) return '';
+        return r.c.map(c => (c ? (c.f || (c.v !== null && c.v !== undefined ? String(c.v) : '')) : '')).join('|');
+      }).join('||');
+    }
+
     // ตรวจสอบว่าข้อความในเซลล์เป็นหัวตารางเวลาหรือไม่
     function isHeaderOrTimeText(str) {
       if (!str) return true;
@@ -725,7 +734,7 @@
       return false;
     }
 
-    // ดึงข้อมูลจากแท็บ "ชื่อผู้สอน" ด้วย JSONP (&headers=0) แบบเดียวกับที่ทำงานได้สมบูรณ์บนเครื่อง
+    // ดึงข้อมูลจากแท็บ "ชื่อผู้สอน" ด้วย JSONP (&headers=0)
     async function loadTeachersData() {
       const sheetName = 'ชื่อผู้สอน';
       const jsonpRes = await fetchSheetJSONP(sheetName, true);
@@ -805,21 +814,21 @@
 
       let headerRowIdx = -1;
 
-      for (let r = 0; r < Math.min(rows.length, 10); r++) {
+      for (let r = 0; r < Math.min(rows.length, 12); r++) {
         const row = rows[r];
         if (!row || !row.c) continue;
         const line = row.c.map(c => (c && (c.f || c.v !== null ? (c.f || String(c.v)) : '')) || '').join(' ');
-        if (line.includes('9.00') || line.includes('13.00')) {
+        if (line.includes('9.00') || line.includes('09.00') || line.includes('13.00') || line.includes('16.00')) {
           headerRowIdx = r;
           break;
         }
       }
 
-      const startRow = headerRowIdx !== -1 ? headerRowIdx + 1 : 5;
+      // หากไม่เจอแถวหัวตาราง ให้เริ่มสแกนตั้งแต่แถว 0 เพื่อไม่ให้ข้ามแถวชื่อห้องเรียน
+      const startRow = headerRowIdx !== -1 ? headerRowIdx + 1 : 0;
 
       let currentRoom = '';
       let currentLab = '';
-      let currentWeek = defaultWeek;
       let currentDay = '';
       let currentDate = '';
 
@@ -833,16 +842,18 @@
           return (c.f || (c.v !== null && c.v !== undefined ? String(c.v) : '')).replace(/[merged]\s*/gi, '').trim();
         };
 
-        const c0 = getVal(0);
         const c1 = getVal(1);
         const c2 = getVal(2);
         const c3 = getVal(3);
 
-        if (c0 && /^\d+$/.test(c0)) {
-          currentWeek = c0;
-        }
-
-        const isRoom = c1 && (c1.startsWith('_') || /^ห้อง/i.test(c1) || /^ST\d+/i.test(c1) || /^DLearn/i.test(c1) || /^Lan\s*\(/i.test(c1));
+        const isRoom = c1 && (
+          c1.startsWith('_') ||
+          /^ห้อง/i.test(c1) ||
+          /^ST\d+/i.test(c1) ||
+          /^DLearn/i.test(c1) ||
+          /^Lan/i.test(c1) ||
+          /ออนไลน์/i.test(c1)
+        );
 
         if (isRoom) {
           currentRoom = formatRoomName(c1);
@@ -854,33 +865,52 @@
             const nextRow = rows[look];
             if (!nextRow || !nextRow.c) continue;
             const nextC1 = (nextRow.c[1] ? (nextRow.c[1].f || String(nextRow.c[1].v || '')).replace(/[merged]\s*/gi, '').trim() : '');
-            if (nextC1 && !nextC1.startsWith('_') && !/^ห้อง/i.test(nextC1) && !/^ST\d+/i.test(nextC1) && !/^DLearn/i.test(nextC1) && !/^Lan\s*\(/i.test(nextC1)) {
+            const nextIsRoom = nextC1 && (
+              nextC1.startsWith('_') ||
+              /^ห้อง/i.test(nextC1) ||
+              /^ST\d+/i.test(nextC1) ||
+              /^DLearn/i.test(nextC1) ||
+              /^Lan/i.test(nextC1) ||
+              /ออนไลน์/i.test(nextC1)
+            );
+            if (nextC1 && !nextIsRoom) {
               currentLab = nextC1;
               break;
             }
           }
-        } else if (c1 && !currentLab && !isRoom) {
+        } else if (c1 && !currentLab && !isRoom && !/สัปดาห์|ตาราง|ปฏิบัติการฟิสิกส์สำหรับ/i.test(c1)) {
           currentLab = c1;
         }
 
-        if (c2 && (c2.includes('จันทร์') || c2.includes('อังคาร') || c2.includes('พุธ') || c2.includes('พฤหัส') || c2.includes('ศุกร์') || c2.includes('เสาร์') || c2.includes('อาทิตย์'))) {
+        const hasDayName = c2 && (
+          c2.includes('จันทร์') ||
+          c2.includes('อังคาร') ||
+          c2.includes('พุธ') ||
+          c2.includes('พฤหัส') ||
+          c2.includes('ศุกร์') ||
+          c2.includes('เสาร์') ||
+          c2.includes('อาทิตย์')
+        );
+
+        if (hasDayName) {
           currentDay = c2;
         }
-        if (c3 && /\d+/.test(c3)) {
+        if (c3 && /\d+/.test(c3) && !/9[.:]00|13[.:]00|16[.:]00/.test(c3)) {
           currentDate = c3;
         }
 
-        const activeDay = c2 || currentDay;
-        const activeDate = c3 || currentDate;
+        const activeDay = hasDayName ? c2 : currentDay;
+        const activeDate = (c3 && /\d+/.test(c3)) ? c3 : currentDate;
         const isSchedule = activeDay || activeDate;
 
-        if (isSchedule && currentRoom) {
+        if (isSchedule) {
           timeSlots.forEach(slot => {
             const cellVal = getVal(slot.col);
-            if (cellVal && cellVal !== '-' && cellVal !== '') {
+            if (cellVal && cellVal !== '-' && cellVal !== '' && !isHeaderOrTimeText(cellVal)) {
               records.push({
-                week: currentWeek || defaultWeek,
-                room: formatRoomName(currentRoom),
+                // ยึดเลขสัปดาห์ตามชื่อแท็บ (defaultWeek) เสมอ ป้องกันปัญหาคัดลอกชีทสัปดาห์ 14 มาสัปดาห์ 15 แล้วลืมแก้เลขคอลัมน์ A
+                week: defaultWeek,
+                room: formatRoomName(currentRoom || 'DLearn (ออนไลน์)'),
                 lab: currentLab || 'ปฏิบัติการฟิสิกส์ 1',
                 day: activeDay,
                 date: activeDate,
@@ -973,9 +1003,10 @@
       const statusArea = document.getElementById('statusArea');
       const statusText = document.getElementById('statusText');
       statusArea.style.display = 'block';
-      statusText.textContent = 'กำลังดึงข้อมูลตารางเรียนและรายชื่อผู้สอน...';
+      statusText.textContent = 'กำลังดึงข้อมูลตารางเรียนทั้ง 15 สัปดาห์ และรายชื่อผู้สอน...';
 
-      const weekPromises = WEEKS.map(w => fetchSheetJSONP(w, false));
+      // ดึงทั้ง 15 สัปดาห์ด้วย forceNoHeaders = true เพื่อไม่ให้แถวข้อมูลถูกตัด
+      const weekPromises = WEEKS.map(w => fetchSheetJSONP(w, true));
       const [weekResults, teachersRows] = await Promise.all([
         Promise.all(weekPromises),
         loadTeachersData()
@@ -983,13 +1014,41 @@
 
       teachersRawData = teachersRows || [];
 
+      // ลายเซ็นของสัปดาห์ที่ 1 (ใช้ตรวจสอบกรณีชื่อแท็บสัปดาห์อื่นมีเคาะวรรคทำให้ Google ส่งชีทแรกซ้ำมาแทน)
+      const week1Sig = (weekResults[0] && weekResults[0].table) ? getTableSignature(weekResults[0].table) : '';
+
       let allRecords = [];
-      weekResults.forEach(res => {
+      for (let i = 0; i < weekResults.length; i++) {
+        let res = weekResults[i];
+        const wkNum = i + 1;
+
+        // หากสัปดาห์ที่ > 1 ได้ตารางซ้ำกับสัปดาห์ที่ 1 แปลว่าชื่อแท็บในชีทอาจมีเว้นวรรค ให้ลองดึงชื่อแท็บสำรองอัตโนมัติ
+        if (i > 0 && res && res.table && week1Sig && getTableSignature(res.table) === week1Sig) {
+          const altNames = [
+            `สัปดาห์ที่ ${wkNum} `,
+            `สัปดาห์ที่${wkNum}`,
+            `สัปดาห์ ${wkNum}`,
+            `สัปดาห์ที่  ${wkNum}`,
+            `สัปดาห์ที่ ${wkNum}  `
+          ];
+          for (const alt of altNames) {
+            const altRes = await fetchSheetJSONP(alt, true);
+            if (altRes && altRes.table && getTableSignature(altRes.table) !== week1Sig) {
+              res = { sheetName: `สัปดาห์ที่ ${wkNum}`, table: altRes.table };
+              break;
+            }
+          }
+        }
+
         if (res && res.table) {
-          const recs = parseSheetTable(res.sheetName, res.table);
+          // ถ้ารองรับแล้วยังเป็นตารางเดียวกับสัปดาห์ที่ 1 อยู่ (ไม่มีแท็บนั้นจริง) ให้ข้ามเพื่อไม่ให้ข้อมูลซ้ำ
+          if (i > 0 && week1Sig && getTableSignature(res.table) === week1Sig) {
+            continue;
+          }
+          const recs = parseSheetTable(`สัปดาห์ที่ ${wkNum}`, res.table);
           allRecords = allRecords.concat(recs);
         }
-      });
+      }
 
       cachedSchedule = allRecords;
       isFetching = false;
@@ -1196,14 +1255,15 @@
         return wa - wb;
       });
 
-      // ตัดรายการที่ซ้ำกันทั้ง วันที่, เวลา, ชื่อปฏิบัติการ และห้องเรียน ให้แสดงเพียงอันเดียว
+      // ตัดรายการที่ซ้ำกันภายในสัปดาห์เดียวกัน (ผูกเลขสัปดาห์ wk เข้ากับคีย์ เพื่อไม่ให้สัปดาห์ที่ 14 ไปตัดสัปดาห์ที่ 15)
       const seenExact = new Set();
       filtered = filtered.filter(item => {
-        const dPart = item.date ? item.date.replace(/\s+/g, '') : `Wk${item.week}_${item.day}`.replace(/\s+/g, '');
+        const wkPart = `wk${item.week}`;
+        const dPart = item.date ? item.date.replace(/\s+/g, '') : `${item.day}`.replace(/\s+/g, '');
         const tPart = (item.time || '').replace(/\s+/g, '');
         const lPart = (item.lab || '').replace(/\s+/g, '');
         const rPart = formatRoomName(item.room).replace(/\s+/g, '');
-        const exactKey = `${dPart}_${tPart}_${lPart}_${rPart}`.toLowerCase();
+        const exactKey = `${wkPart}_${dPart}_${tPart}_${lPart}_${rPart}`.toLowerCase();
 
         if (seenExact.has(exactKey)) return false;
         seenExact.add(exactKey);
@@ -1346,11 +1406,13 @@
 
       const seenExact = new Set();
       filtered = filtered.filter(item => {
-        const dPart = item.date ? item.date.replace(/\s+/g, '') : `Wk${item.week}_${item.day}`.replace(/\s+/g, '');
+        const wkPart = `wk${item.week}`;
+        const dPart = item.date ? item.date.replace(/\s+/g, '') : `${item.day}`.replace(/\s+/g, '');
         const tPart = (item.time || '').replace(/\s+/g, '');
         const lPart = (item.lab || '').replace(/\s+/g, '');
         const rPart = formatRoomName(item.room).replace(/\s+/g, '');
-        const exactKey = `${dPart}_${tPart}_${lPart}_${rPart}`.toLowerCase();
+        const sPart = (item.secText || '').replace(/\s+/g, '');
+        const exactKey = `${wkPart}_${dPart}_${tPart}_${lPart}_${rPart}_${sPart}`.toLowerCase();
 
         if (seenExact.has(exactKey)) return false;
         seenExact.add(exactKey);
