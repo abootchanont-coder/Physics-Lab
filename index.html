@@ -668,7 +668,7 @@
         .replace(/Lan\s*\(\s*ออนไลน์\s*\)/gi, 'DLearn (ออนไลน์)');
     }
 
-    // ดึงข้อมูลผ่าน JSONP (รองรับ forceNoHeaders = true เพื่อดึงทุกแถวตั้งแต่แถวที่ 1 โดยไม่โดนรวบเป็น Header)
+    // ดึงข้อมูลผ่าน JSONP (รองรับ forceNoHeaders = true เพื่อดึงทุกแถวตั้งแต่แถวที่ 1)
     function fetchSheetJSONP(sheetName, forceNoHeaders = true) {
       return new Promise((resolve) => {
         const callbackName = 'gvizCallback_' + Math.random().toString(36).substring(2, 9);
@@ -715,13 +715,42 @@
       });
     }
 
-    // สร้างลายเซ็นของตารางเพื่อตรวจสอบว่า Google ส่งชีทแรก (สัปดาห์ที่ 1) ซ้ำมาหรือไม่กรณีชื่อแท็บมีเว้นวรรค
+    // สร้างลายเซ็นของตารางเพื่อตรวจสอบว่า Google ส่งแท็บแรกสุดซ้ำมาหรือไม่
     function getTableSignature(table) {
       if (!table || !table.rows) return '';
       return table.rows.slice(0, 15).map(r => {
         if (!r || !r.c) return '';
         return r.c.map(c => (c ? (c.f || (c.v !== null && c.v !== undefined ? String(c.v) : '')) : '')).join('|');
       }).join('||');
+    }
+
+    // อ่านเลขสัปดาห์จริงที่ระบุอยู่ในคอลัมน์ A (หรือหัวตาราง) ของชีทนั้น
+    function detectWeekFromTable(table) {
+      if (!table || !table.rows) return null;
+      const rows = table.rows;
+
+      for (let r = 0; r < rows.length; r++) {
+        const row = rows[r];
+        if (!row || !row.c) continue;
+
+        const c0Obj = row.c[0];
+        if (c0Obj) {
+          const c0 = (c0Obj.f || (c0Obj.v !== null && c0Obj.v !== undefined ? String(c0Obj.v) : '')).replace(/[merged]\s*/gi, '').trim();
+          if (/^\d+$/.test(c0)) {
+            const num = parseInt(c0, 10);
+            if (num >= 1 && num <= 20) return num;
+          }
+          const m = c0.match(/สัปดาห์ที่\s*(\d+)/);
+          if (m) return parseInt(m[1], 10);
+        }
+
+        if (r < 5) {
+          const line = row.c.map(c => (c ? (c.f || (c.v !== null && c.v !== undefined ? String(c.v) : '')) : '')).join(' ');
+          const mLine = line.match(/สัปดาห์ที่\s*(\d+)/);
+          if (mLine) return parseInt(mLine[1], 10);
+        }
+      }
+      return null;
     }
 
     // ตรวจสอบว่าข้อความในเซลล์เป็นหัวตารางเวลาหรือไม่
@@ -800,10 +829,8 @@
     }
 
     // แปลงข้อมูลตารางเรียนในแต่ละสัปดาห์
-    function parseSheetTable(sheetName, table) {
+    function parseSheetTable(targetWeekStr, table) {
       const rows = table.rows || [];
-      const defaultWeekMatch = sheetName.match(/\d+/);
-      const defaultWeek = defaultWeekMatch ? defaultWeekMatch[0] : '';
       const records = [];
 
       let timeSlots = [
@@ -824,7 +851,6 @@
         }
       }
 
-      // หากไม่เจอแถวหัวตาราง ให้เริ่มสแกนตั้งแต่แถว 0 เพื่อไม่ให้ข้ามแถวชื่อห้องเรียน
       const startRow = headerRowIdx !== -1 ? headerRowIdx + 1 : 0;
 
       let currentRoom = '';
@@ -903,14 +929,13 @@
         const activeDate = (c3 && /\d+/.test(c3)) ? c3 : currentDate;
         const isSchedule = activeDay || activeDate;
 
-        if (isSchedule) {
+        if (isSchedule && currentRoom) {
           timeSlots.forEach(slot => {
             const cellVal = getVal(slot.col);
             if (cellVal && cellVal !== '-' && cellVal !== '' && !isHeaderOrTimeText(cellVal)) {
               records.push({
-                // ยึดเลขสัปดาห์ตามชื่อแท็บ (defaultWeek) เสมอ ป้องกันปัญหาคัดลอกชีทสัปดาห์ 14 มาสัปดาห์ 15 แล้วลืมแก้เลขคอลัมน์ A
-                week: defaultWeek,
-                room: formatRoomName(currentRoom || 'DLearn (ออนไลน์)'),
+                week: targetWeekStr,
+                room: formatRoomName(currentRoom),
                 lab: currentLab || 'ปฏิบัติการฟิสิกส์ 1',
                 day: activeDay,
                 date: activeDate,
@@ -1005,25 +1030,31 @@
       statusArea.style.display = 'block';
       statusText.textContent = 'กำลังดึงข้อมูลตารางเรียนทั้ง 15 สัปดาห์ และรายชื่อผู้สอน...';
 
-      // ดึงทั้ง 15 สัปดาห์ด้วย forceNoHeaders = true เพื่อไม่ให้แถวข้อมูลถูกตัด
       const weekPromises = WEEKS.map(w => fetchSheetJSONP(w, true));
-      const [weekResults, teachersRows] = await Promise.all([
+      const [weekResults, teachersRows, defaultSheetRes] = await Promise.all([
         Promise.all(weekPromises),
-        loadTeachersData()
+        loadTeachersData(),
+        fetchSheetJSONP('__DEFAULT_FIRST_TAB__', true)
       ]);
 
       teachersRawData = teachersRows || [];
 
-      // ลายเซ็นของสัปดาห์ที่ 1 (ใช้ตรวจสอบกรณีชื่อแท็บสัปดาห์อื่นมีเคาะวรรคทำให้ Google ส่งชีทแรกซ้ำมาแทน)
-      const week1Sig = (weekResults[0] && weekResults[0].table) ? getTableSignature(weekResults[0].table) : '';
+      // ตรวจสอบว่าแท็บแรกสุดของไฟล์ Google Sheets คือสัปดาห์ที่เท่าไหร่ (เช่น สัปดาห์ที่ 9)
+      const fallbackTable = (defaultSheetRes && defaultSheetRes.table) || (weekResults[0] && weekResults[0].table) || null;
+      const defaultSig = fallbackTable ? getTableSignature(fallbackTable) : '';
+      const firstTabTrueWeek = fallbackTable ? (detectWeekFromTable(fallbackTable) || 1) : 1;
 
       let allRecords = [];
+      let defaultTabParsed = false;
+
       for (let i = 0; i < weekResults.length; i++) {
         let res = weekResults[i];
         const wkNum = i + 1;
+        let sig = (res && res.table) ? getTableSignature(res.table) : '';
 
-        // หากสัปดาห์ที่ > 1 ได้ตารางซ้ำกับสัปดาห์ที่ 1 แปลว่าชื่อแท็บในชีทอาจมีเว้นวรรค ให้ลองดึงชื่อแท็บสำรองอัตโนมัติ
-        if (i > 0 && res && res.table && week1Sig && getTableSignature(res.table) === week1Sig) {
+        // กรณีที่ได้ตารางตรงกับแท็บแรกสุด แต่เลขสัปดาห์ที่ขอดึง (wkNum) ไม่ตรงกับเลขสัปดาห์จริงของแท็บแรกสุด (firstTabTrueWeek)
+        // แปลว่าไม่มีชื่อแท็บนั้น หรือชื่อแท็บมีเว้นวรรค ให้ลองค้นหาชื่อแท็บสำรอง
+        if (res && res.table && defaultSig && sig === defaultSig && wkNum !== firstTabTrueWeek) {
           const altNames = [
             `สัปดาห์ที่ ${wkNum} `,
             `สัปดาห์ที่${wkNum}`,
@@ -1031,21 +1062,30 @@
             `สัปดาห์ที่  ${wkNum}`,
             `สัปดาห์ที่ ${wkNum}  `
           ];
+          let foundAlt = false;
           for (const alt of altNames) {
             const altRes = await fetchSheetJSONP(alt, true);
-            if (altRes && altRes.table && getTableSignature(altRes.table) !== week1Sig) {
-              res = { sheetName: `สัปดาห์ที่ ${wkNum}`, table: altRes.table };
+            if (altRes && altRes.table && getTableSignature(altRes.table) !== defaultSig) {
+              res = altRes;
+              sig = getTableSignature(altRes.table);
+              foundAlt = true;
               break;
             }
+          }
+          // หากค้นหาชื่อสำรองแล้วยังได้แท็บแรกสุดกลับมา แปลว่าสัปดาห์นั้นไม่มีในไฟล์ (เช่น สัปดาห์ที่ 1-8) ให้ข้ามไปเลย
+          if (!foundAlt) {
+            continue;
           }
         }
 
         if (res && res.table) {
-          // ถ้ารองรับแล้วยังเป็นตารางเดียวกับสัปดาห์ที่ 1 อยู่ (ไม่มีแท็บนั้นจริง) ให้ข้ามเพื่อไม่ให้ข้อมูลซ้ำ
-          if (i > 0 && week1Sig && getTableSignature(res.table) === week1Sig) {
-            continue;
+          let actualWeekNum = wkNum;
+          if (defaultSig && sig === defaultSig) {
+            if (defaultTabParsed) continue;
+            defaultTabParsed = true;
+            actualWeekNum = firstTabTrueWeek;
           }
-          const recs = parseSheetTable(`สัปดาห์ที่ ${wkNum}`, res.table);
+          const recs = parseSheetTable(String(actualWeekNum), res.table);
           allRecords = allRecords.concat(recs);
         }
       }
@@ -1255,7 +1295,7 @@
         return wa - wb;
       });
 
-      // ตัดรายการที่ซ้ำกันภายในสัปดาห์เดียวกัน (ผูกเลขสัปดาห์ wk เข้ากับคีย์ เพื่อไม่ให้สัปดาห์ที่ 14 ไปตัดสัปดาห์ที่ 15)
+      // ตัดรายการที่ซ้ำกันทั้ง สัปดาห์, วันที่, เวลา, ชื่อปฏิบัติการ และห้องเรียน ให้แสดงเพียงอันเดียว
       const seenExact = new Set();
       filtered = filtered.filter(item => {
         const wkPart = `wk${item.week}`;
